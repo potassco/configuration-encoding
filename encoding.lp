@@ -12,6 +12,15 @@ part(travel_bike,carrier,"carrier",1,1).
 part(frame,bag,"bags",0,2).
 part(carrier,bag,"bags",0,3).
 
+% Partonomy has to be acyclic and rooted
+partonomic_path(X,Y) :- part(X,Y,_,_,_).
+partonomic_path(X,Z) :- partonomic_path(X,Y), partonomic_path(Y,Z).
+:- partonomic_path(X,X).
+
+partonomic_root(T) :- type(T), not partonomic_path(_,T).
+:- {partonomic_root(T)} > 1.
+
+
 % attr(travel_bike,"total_weight").
 % attr(travel_bike,"total_bags").
 attr(wheel,"size").
@@ -80,7 +89,7 @@ val(((bag,1),"material"),"Leather").
 
 
 % Assign values to attribute variables
-{ val(((T,I),D),V) : attr(T,D,V) } = 1:- object((T,I)), attr(T,D).
+% { val(((T,I),D),V) : attr(T,D,V) } = 1:- object((T,I)), attr(T,D).
 
 % Attribute values have to lie inside range
 :- val(((T,_),D),V), not attr(T,D,V).
