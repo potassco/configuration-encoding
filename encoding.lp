@@ -20,6 +20,10 @@ descriptor("port",D) :- part(_,_,D,_,_).
 desciptor("attribute",D) :- attr(_,D).
 :- descriptor("port",D), desciptor("attribute",D).
 
+% Number of columns/paths and their for a constraint
+num_rows(T,C,N) :- constraint(T,C), N = #max{ R: constraint(T,C,_,R,_)}.
+num_paths(T,C,N) :- constraint(T,C), N = #count{ P : constraint(T,C,P,_,_)}.
+order(T,C,P,I) :- constraint(T,C), constraint(T,C,P,_,_), I = #count{ P': constraint(T,C,P',_,_), P'<=P }.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Instantiation
@@ -61,21 +65,26 @@ selector(O,(D,P),(D,(O',I))):- selector(O,P,O'), object((D,(O',I))).
 % attribute selector: (O,P,X)
 selector(O,(D,P),(O',D)) :- selector(O,P,O'), object(O',T), attr(T,D).
 
+
 %%% Table constraints
-% num_rows(T,I,N) :- constraint(T,I), N = #count { P : constraint(T,I,P,_,_)}.
+% Generate cross products for each object and corresponding constraint
+var_tuple((O,C),N,X) :- object(O,T), num_paths(T,C,N), selector(O,P,X), order(T,C,P,N).
+var_tuple((O,C),N,(VT,X)) :- object(O,T), var_tuple((O,C),N+1,VT), selector(O,P,X), order(T,C,P,N), N>0.
+var_tuple((O,C),VT) :- var_tuple((O,C),1,VT).
 
-% Chosen values need to correspond to a valid combination (for an object and a constraint)
-row(O,I,P,R) :- object(O,T), selector(O,P,X), val(X,V), constraint(T,I,P,R,V).
-% sat(O,I) :- row(O,I,P,R), constraint(T,I,P',R',_), P < P', R < R', not row(O,I,P',R').
+num_tuples((O,C),N) :- object(O,T), constraint(T,C), N = #count{ VT : var_tuple((O,C),VT) }.
+tuple_order((O,C),VT,I) :- object(O,T), constraint(T,C), var_tuple((O,C),VT), I = #count{ VT': var_tuple((O,C),VT'), VT'<VT }.
 
-% #show num_rows/3.
-#show row/4.
-% #show unsat/2.
+disentangle((O,C),I,N,VT) :- object(O,T), var_tuple((O,C),VT), tuple_order((O,C),VT,I), num_tuples((O,C),N).
+disentangle((O,C),I,N,VT') :- disentangle((O,C),I,N+1,VT), VT = (VT',E), N>0.
+cross((O,C),I,X) :- disentangle((O,C),I,N,(VT,X)), N > 1.
+cross((O,C),I,X) :- disentangle((O,C),I,1,X).
 
-% unsat((T,I),J) :- object((T,I)), constraint(T,J), not row((T,I),J,_).
-% unsat(O,J) :- row(O,J,K), row(O,J,K2), K < K2.
-
-% :- unsat(O,J).
+% A tuple is valid, if all its values correspond to one of the rows
+row((O,C),P,I,R) :- object(O,T), cross((O,C),I,X), selector(O,P,X), val(X,V), constraint(T,C,P,R,V).
+sat((O,C),I,R) :- object(O,T), constraint(T,C), tuple_order((O,C),_,I), num_paths(T,C,N), num_rows(T,C,NR), R = 0..NR, N = #count { P: row((O,C),P,I,R)}.
+unsat((O,C)) :- object(O,T), constraint(T,C), tuple_order((O,C),_,I), not sat((O,C),I,_).
+:- unsat(C).
 
 % Check partonomic cardinalities
 % count(S,T,D,X) :- part(S,T,D,Min,Max), X = #count { IS,IT : association((S,IS),(T,IT),D) }.
