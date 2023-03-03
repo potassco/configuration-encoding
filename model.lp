@@ -40,8 +40,9 @@ path(travel_bike,total_bags,(bags,(carrier,()))).
 constraint(wheel,0).
 constraint(wheel,0,(size,()),0,22). constraint(wheel,0,(weight,()),0,1800).
 constraint(wheel,0,(size,()),1,24). constraint(wheel,0,(weight,()),1,1900).
-constraint(wheel,0,(size,()),2,27). constraint(wheel,0,(weight,()),2,2100).
+constraint(wheel,0,(size,()),2,27). constraint(wheel,0,(weight,()),2,(2100;4100)).
 constraint(wheel,0,(size,()),3,29). constraint(wheel,0,(weight,()),3,2200).
+
 
 constraint(bag,0).
 constraint(bag,0,(volume,()),0,10). constraint(bag,0,(weight,()),0,100).
