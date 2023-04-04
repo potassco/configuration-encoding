@@ -23,8 +23,10 @@ attr(T,D,"atomic") :- attr(T,D).
 :- attr(T,D,E), attr(T,D,E'), E < E'.
 
 % Number of columns/paths and their for a constraint
-max_row_index(C,N) :- constraint(C), N = #max{ R: entry(C,_,R,_)}.
-max_column_index(C,N) :- constraint(C), N = #max{ P : column(C,P,_)}.
+max_row_index(C,N) :- constraint(C,"table"), N = #max{ R: entry(C,_,R,_)}.
+max_column_index(C,N) :- constraint(C,"table"), N = #max{ P : column(C,P,_)}.
+
+% Constraints are defined uniquely
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% User requirements check
@@ -46,6 +48,8 @@ object(()).
 
 % Object generation
 Min { object((D,(P,I))) : I = 0..Max } Max :- object(P,S), part(S,T,D,Min,Max).
+% Check partonomic cardinalities, still needed?
+% count(S,T,D,X) :- part(S,T,D,Min,Max), X = #count { IS,IT : association((S,IS),(T,IT),D) }.
 
 % Use indices in ascending order
 :- object((D,(P,I))), not object((D,(P,I-1))), I > 0.
@@ -93,8 +97,9 @@ val((O,D),V) :- object(O,T), attr(T,D,"min"), V = #min { V',X,P : path(T,D,P), v
 val((O,D),V) :- object(O,T), attr(T,D,"max"), V = #max { V',X,P : path(T,D,P), val(X,V'), selector(O,P,X) }.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Table constraints
+%%% Constraints
 %%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Table constraints
 
 % Generate cross products for each object and corresponding constraint
 var_tuple((O,C),N,X) :- object(O,T), max_column_index((T,C),N), selector(O,P,X), column((T,C),N,P).
@@ -102,13 +107,12 @@ var_tuple((O,C),N,(VT,X)) :- object(O,T), var_tuple((O,C),N+1,VT), selector(O,P,
 var_tuple((O,C),VT) :- var_tuple((O,C),0,VT).
 
 % num_tuples((O,C),N) :- object(O,T), constraint((T,C)), N = #count{ VT : var_tuple((O,C),VT) }.
-tuple_order((O,C),VT,I) :- object(O,T), constraint((T,C)), var_tuple((O,C),VT), I = #count{ VT': var_tuple((O,C),VT'), VT'<VT }.
+tuple_order((O,C),VT,I) :- object(O,T), constraint((T,C),"table"), var_tuple((O,C),VT), I = #count{ VT': var_tuple((O,C),VT'), VT'<VT }.
 
 disentangle((O,C),I,N+1,VT) :- object(O,T), var_tuple((O,C),VT), tuple_order((O,C),VT,I), max_column_index((T,C),N).
 disentangle((O,C),I,N,VT') :- disentangle((O,C),I,N+1,VT), VT = (VT',E), N>0.
 cross((O,C),I,X) :- disentangle((O,C),I,N,(VT,X)), N > 1.
 cross((O,C),I,X) :- disentangle((O,C),I,1,X).
-
 
 % A row is satisfied if all entries
 % unsat((O,C),I,R) :- object(O,T), cross((O,C),I,X), entry((T,C),_,R,V), not val(X,V).
@@ -117,14 +121,20 @@ cross((O,C),I,X) :- disentangle((O,C),I,1,X).
 
 % % A tuple is valid, if all its values correspond to one of the rows
 row((O,C),P,I,R) :- object(O,T), cross((O,C),I,X), selector(O,P,X), val(X,V), column((T,C),PI,P), entry((T,C),PI,R,V).
-% row((O,C),I) :- object(O,T), cross((O,C),I,X), selector(O,P,X). %, val(X,V), column((T,C),PI,P), entry((T,C),PI,R,V).
-
-sat((O,C),I,R) :- object(O,T), constraint((T,C)), tuple_order((O,C),_,I), max_column_index((T,C),N-1), max_row_index((T,C),NR), R = 0..NR, N = #count { P: row((O,C),P,I,R)}.
-unsat((O,C)) :- object(O,T), constraint((T,C)), tuple_order((O,C),_,I), not sat((O,C),I,_).
+sat((O,C),I,R) :- object(O,T), constraint((T,C),"table"), tuple_order((O,C),_,I), max_column_index((T,C),N-1), max_row_index((T,C),NR), R = 0..NR, N = #count { P: row((O,C),P,I,R)}.
+unsat((O,C)) :- object(O,T), constraint((T,C),"table"), tuple_order((O,C),_,I), not sat((O,C),I,_).
 :- unsat(C).
 
+
+%%% Comparison constraints
+left_compare((O,C),Op,X) :- object(O,T), constraint((T,C),Op), left((T,C),P), selector(O,P,X).
+right_compare((O,C),Op,X) :- object(O,T), constraint((T,C),Op), right((T,C),P), selector(O,P,X).
+
+sat(C,"eq") :- left_compare(C,"eq",X1), right_compare(C,"eq",X2), val(X1,V1), val(X2,V2), V1 = V2.
+sat(C,"neq") :- left_compare(C,"neq",X1), right_compare(C,"neq",X2), val(X1,V1), val(X2,V2), V1 != V2.
+sat(C,"lt") :- left_compare(C,"lt",X1), right_compare(C,"lt",X2), val(X1,V1), val(X2,V2), V1 < V2.
+sat(C,"lte") :- left_compare(C,"lte",X1), right_compare(C,"lte",X2), val(X1,V1), val(X2,V2), V1 <= V2.
+sat(C,"gt") :- left_compare(C,"gt",X1), right_compare(C,"gt",X2), val(X1,V1), val(X2,V2), V1 > V2.
+sat(C,"gte") :- left_compare(C,"gte",X1), right_compare(C,"gte",X2), val(X1,V1), val(X2,V2), V1 >= V2.
+unsat((O,C)) :- object(O,T), constraint((T,C),Op), not sat((O,C),Op), Op != "table".
 #show val/2.
-
-% Check partonomic cardinalities
-% count(S,T,D,X) :- part(S,T,D,Min,Max), X = #count { IS,IT : association((S,IS),(T,IT),D) }.
-
