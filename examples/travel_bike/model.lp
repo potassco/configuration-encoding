@@ -8,24 +8,21 @@ part(travel_bike,wheel,front_wheel,1,1).
 part(travel_bike,wheel,rear_wheel,1,1).
 part(travel_bike,frame,frame,1,1).
 part(travel_bike,carrier,carrier,1,1).
-part(frame,bag,bags,0,0).
-part(carrier,bag,bags,0,2).
+part(frame,bag,bags,0,2).
+part(carrier,bag,bags,0,3).
 
 attr(travel_bike,total_weight,"sum").
 attr(travel_bike,total_bags,"count").
-% attr(wheel,size).
+attr(wheel,size).
 attr(wheel,weight).
-% attr(bag,volume).
+attr(bag,volume).
 attr(bag,weight).
-% attr(bag,material).
+attr(bag,material).
 
-% attr(travel_bike,total_weight,0..100).
 dom(wheel,size,(22;24;27;29)).
-% dom(wheel,weight,(1800;1900;2100;2200)).
-dom(wheel,weight,(1800;2100)).
+dom(wheel,weight,(1800;1900;2100;2200)).
 dom(bag,volume,(10;20;50;100)).
-% dom(bag,weight,(100;250;600;1200)).
-dom(bag,weight,(250;600)).
+dom(bag,weight,(100;250;600;1200)).
 dom(bag,material,("Cotton";"Leather";"Polyester")).
 
 path(travel_bike,total_weight,(weight,(rear_wheel,()))).

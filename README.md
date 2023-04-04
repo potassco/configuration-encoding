@@ -28,7 +28,7 @@ An attribute can be
     - count
     - max
     - min
-````
+```
 attr(T,D).
 attr(T,D,"count").
 attr(T,D,"sum").
