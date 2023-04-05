@@ -63,16 +63,16 @@ constraint((T,I)).
 ```
 
 For table constraints the columns are identified by path expressions.
-Columns `X` of constraint `(T,I)`
+Columns `Col` of constraint `(T,I)`
 point to attributes `P`,
 where `P` is a (attribute) path expressions.
 ```
-column((T,I),X,P).
+column((T,I),Col,P).
 ```
 Table constraint `(T,I)`
-has value `V` in column `X` and row `Y`.
+has value `V` in column `Col` and row `Row`.
 ```
-entry((T,I),X,Y,V).
+entry((T,I),Col,Row,V).
 ```
 
 TODO: Other types of constraints (smaller, equal, larger,...)
