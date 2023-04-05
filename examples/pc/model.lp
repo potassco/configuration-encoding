@@ -1,6 +1,6 @@
 %%% Types
 type(pc).
-type(internet_conn).
+type(internet_conn). % Could be implemented as an attribute? But how to deal with price then?
 type(hd_unit).
 type(hd_disk).
 type(disk_port).
@@ -109,10 +109,6 @@ column((pc,2),0,(type,(cpu,()))).   column((pc,2),1,(type,(mb,()))).
 entry((pc,2),(0,0),"CPUS").         entry((pc,2),(1,0),"MBSilver").
 entry((pc,2),(0,1),"CPUD").         entry((pc,2),(1,1),"MBDiamond").
 
-% TODO: Encode constraint gc3 by means of a connection port?
-% TODO: Same for crc1, crc2, crc3, crc4
-
-
 % Encodes generalizations
 constraint((hd_disk,0),"table").
 column((hd_disk,0),0,(type,())).            column((hd_disk,0),1,(capacity,())). column((hd_disk,0),2,(price,())).
@@ -143,3 +139,35 @@ column((screen,0),0,(efficiency,())).   column((screen,0),1,(price,())).
 entry((screen,0),(0,0),"A").            entry((screen,0),(1,0),200).
 entry((screen,0),(0,1),"B").            entry((screen,0),(1,1),150).
 entry((screen,0),(0,2),"C").            entry((screen,0),(1,2),100).
+
+% gc3: Each OS of type OSAlpha requires a CPU of type CPUD.
+constraint((pc,3),"requires").
+condition((pc,3),(type,(os,())),"OSAlpha").
+requires((pc,3),(type,(cpu,())),"CPUD").
+
+% crc1: Intended internet usage or multimedia usage (attribute of PC)
+%       requires the existence of an Internet connection (InternetConn).
+constraint((pc,4),"requires").
+condition((pc,4),(usage,()),"internet").
+requires((pc,4),(internet_conn,()),1). % Supposed to express that there needs to be one (exactly or at least?) object with internet_conn
+% requires((pc,4),(internet_conn,())). % Alternatively use requires/2 for objects?
+
+constraint((pc,5),"requires").
+condition((pc,5),(usage,()),"multimedia").
+requires((pc,5),(internet_conn,()),1).
+% requires((pc,4),(internet_conn,())).
+
+% crc2: scientific usage requires CPUs of type CPUD
+constraint((pc,6),"requires").
+condition((pc,6),(usage,()),"scientific").
+requires((pc,6),(type,(cpu,())),"CPUD").
+
+% crc3: The required energy efficiency (attribute efficiency of PC) must be supported by the MB
+constraint((pc,7),"eq").
+left((pc,7),(efficiency,()),).
+right((pc,7),(efficiency,(mb,()))).
+
+% crc4: The required energy efficiency (attribute efficiency of PC) must be supported by the included Screens.
+constraint((pc,8),"eq").
+left((pc,8),(efficiency,()),).
+right((pc,8),(efficiency,(screen,()))).
