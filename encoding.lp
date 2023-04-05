@@ -24,7 +24,7 @@ descriptor("attribute",D) :- attr(_,D,_).
 :- descriptor("port",D), descriptor("attribute",D).
 
 % Number of columns/paths and their for a constraint
-max_row_index(C,N) :- constraint(C,"table"), N = #max{ R: entry(C,_,R,_)}.
+max_row_index(C,N) :- constraint(C,"table"), N = #max{ R: entry(C,(_,R),_)}.
 max_column_index(C,N) :- constraint(C,"table"), N = #max{ Col : column(C,Col,_)}.
 
 % Constraints are defined uniquely
@@ -111,11 +111,11 @@ var_tuple((O,C),N,(VT,X)) :- object(O,T), var_tuple((O,C),N+1,VT), selector(O,P,
 
 % For each tuple check that it satisfies some row
 % by unpacking the nested tuples and checking the columns from left to right
-sat_row((O,C),VT,0,Row,VT') :- object(O,T), var_tuple((O,C),0,VT), VT = (VT',X), val(X,V), entry((T,C),0,Row,V).
-sat_row((O,C),VT,Col,Row,VT'') :- object(O,T), sat_row((O,C),VT,Col-1,Row,VT'), VT' = (VT'',X), val(X,V), entry((T,C),Col,Row,V).
+sat_row((O,C),VT,(0,Row),VT') :- object(O,T), var_tuple((O,C),0,VT), VT = (VT',X), val(X,V), entry((T,C),(0,Row),V).
+sat_row((O,C),VT,(Col,Row),VT'') :- object(O,T), sat_row((O,C),VT,(Col-1,Row),VT'), VT' = (VT'',X), val(X,V), entry((T,C),(Col,Row),V).
 
 % A table constraint is not satisfied if some tuple does not satisfy all values in a row
-unsat(C) :- var_tuple(C,0,VT), not sat_row(C,VT,_,_,()).
+unsat(C) :- var_tuple(C,0,VT), not sat_row(C,VT,_,()).
 :- unsat(C).
 
 

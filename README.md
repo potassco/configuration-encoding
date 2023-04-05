@@ -72,7 +72,7 @@ column((T,I),Col,P).
 Table constraint `(T,I)`
 has value `V` in column `Col` and row `Row`.
 ```
-entry((T,I),Col,Row,V).
+entry((T,I),(Col,Row),V).
 ```
 
 TODO: Other types of constraints (smaller, equal, larger,...)
