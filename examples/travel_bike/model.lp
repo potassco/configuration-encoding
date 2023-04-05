@@ -36,21 +36,17 @@ path(travel_bike,total_bags,(bags,(frame,()))).
 path(travel_bike,total_bags,(bags,(carrier,()))).
 
 %%% Constraints
-constraint((travel_bike,0),"table").
-column((travel_bike,0),0,(total_bags,())).
-entry((travel_bike,0),(0,0),0).
-entry((travel_bike,0),(0,1),1).
-entry((travel_bike,0),(0,2),2).
-entry((travel_bike,0),(0,3),3).
-entry((travel_bike,0),(0,4),4).
+constraint((travel_bike,0),"lte").
+left((travel_bike,0),(total_bags,())).
+right((travel_bike,0),constant(4)).
 
 constraint((travel_bike,1),"eq").
 left((travel_bike,1),(size,(front_wheel,()))).
 right((travel_bike,1),(size,(rear_wheel,()))).
 
-% constraint((travel_bike,2),"leq").
-% left((travel_bike,2),(total_weight,())).
-% right((travel_bike,2),100).
+constraint((travel_bike,2),"lte").
+left((travel_bike,2),(total_weight,())).
+right((travel_bike,2),constant(5000)).
 
 constraint((wheel,0),"table").
 column((wheel,0),0,(size,())).  column((wheel,0),1,(weight,())).
