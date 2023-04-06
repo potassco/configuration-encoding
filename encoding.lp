@@ -145,15 +145,29 @@ unsat(C) :- left_compare(C,Op,X1), right_compare(C,Op,X2), not sat_pair(C,X1,X2)
 % Assumes that the requirement has to hold for all objects/attributes in question
 sat_condition((O,C)):- object(O,T), constraint((T,C),"requires"), condition((T,C),P,V), selector(O,P,X), val(X,V).
 
-sat_req((O,C),X,V) :- object(O,T), sat_condition((O,C)), requires((T,C),P,V), selector(O,P,X). %, not val(X,V).
+% Attribute requirement
+% sat_req((O,C),X,V) :- object(O,T), sat_condition((O,C)), requires((T,C),P,V), selector(O,P,X). %, not val(X,V).
 
-% selector((),(volume,(bags,())),((bags,((),0)),volume)).
+% Object requirement
+% Existential: There needs to be at least one object fulfillling the requirement.
+sat_req((O,C),O') :- object(O,T), sat_condition((O,C)), requires((T,C),P), selector(O,P,O').
+unsat(C) :- sat_condition(C), not sat_req(C,_).
 
+#show object/1.
+#show val/2.
 
-% #show selector/3.
-#show sat_condition/1.
-#show sat_req/3.
-
-
-
-% #show val/2.
+% Define statements
+#defined type/1.
+#defined part/5.
+#defined connection/5.
+#defined attr/2.
+#defined attr/3.
+#defined dom/3.
+#defined path/3.
+#defined constraint/2.
+#defined column/3.
+#defined entry/3.
+#defined left/2.
+#defined right/2.
+#defined condition/3.
+#defined requires/2.

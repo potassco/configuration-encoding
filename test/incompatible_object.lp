@@ -8,7 +8,8 @@ dom(bike,type,("city";"race")).
 % attr(wheel,size).
 % dom(wheel,size,(25;27)).
 
-% A city bike requires a basket (but a race bike is allowed to have a basket)
-constraint((bike,0),"requires").
+% TODO: A race bike is incompatible with a basket (but a city bike does not require one)
+constraint((bike,0),"table").
+column((bike,0),0,(type,()))
 condition((bike,0),(type,()),"city").
 requires((bike,0),((basket,()))).

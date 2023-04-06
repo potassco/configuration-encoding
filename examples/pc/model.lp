@@ -26,7 +26,7 @@ part(hd_controller,controller_port,controller_port,4,4).
 part(mb,cpu,cpu,1,2).
 
 %%% Connections
-connection(controller_port,disk_port,c2d,0,1).
+% connection(controller_port,disk_port,c2d,0,1).
 
 %%% Attributes
 attr(pc,usage).
@@ -54,8 +54,8 @@ attr(os,price).
 attr(app,hd_capacity).
 attr(app,price).
 
-dom(pc,usage,("internet";"scientific","multimedia")).
-dom(pc,efficiency,("A","B","C")).
+dom(pc,usage,("internet";"scientific";"multimedia")).
+dom(pc,efficiency,("A";"B";"C")).
 dom(internet_conn,price,50).
 dom(hd_disk,type,("MedStoreDisk";"MaxStoreDisk")).
 dom(hd_disk,capacity,(200;1000)).
@@ -66,8 +66,8 @@ dom(mb,type,("MBSilver";"MBDiamond")).
 dom(mb,efficiency,("A";"B")).
 dom(mb,price,(250;350)).
 dom(cpu,type,("CPUD";"CPUS")).
-dom(cpu,clockrate,("medium","fast")).
-dom(cpu,price,(100,150)).
+dom(cpu,clockrate,("medium";"fast")).
+dom(cpu,price,(100;150)).
 dom(screen,efficiency,("A";"B";"C")).
 dom(screen,price,(100;150;200)).
 dom(os,type,("OSBeta";"OSAlpha")).
@@ -76,7 +76,7 @@ dom(os,price,(100;500)).
 dom(app,hd_capacity,200).
 dom(app,price,50).
 
-%%% Aggregate paths
+% %%% Aggregate paths
 path(pc,price,(price,(internet_conn,()))).
 path(pc,price,(price,(hd_unit,()))).
 path(pc,price,(price,(mb,()))).
@@ -96,6 +96,10 @@ path(hd_unit,price,(price,(hd_controller,()))).
 constraint((pc,0),"lte").
 left((pc,0),(price,())).
 right((pc,0),constant(2500)).
+
+constraint((hd_unit,0),"lte").
+left((hd_unit,0),(price,())).
+right((hd_unit,0),constant(1000)).
 
 % Encodes constraint resc2
 constraint((pc,1),"lte").
@@ -141,9 +145,14 @@ entry((screen,0),(0,1),"B").            entry((screen,0),(1,1),150).
 entry((screen,0),(0,2),"C").            entry((screen,0),(1,2),100).
 
 % gc3: Each OS of type OSAlpha requires a CPU of type CPUD.
-constraint((pc,3),"requires").
-condition((pc,3),(type,(os,())),"OSAlpha").
-requires((pc,3),(type,(cpu,())),"CPUD").
+% constraint((pc,3),"requires").
+% condition((pc,3),(type,(os,())),"OSAlpha").
+% requires((pc,3),(type,(cpu,())),"CPUD").
+constraint((pc,3),"table").
+column((pc,3),0,(type,(os,()))).        column((pc,3),1,(type,(cpu,()))).
+entry((pc,3),(0,0),"OSAlpha").   entry((pc,3),(1,0),"CPUD").
+entry((pc,3),(0,1),"OSBeta").   entry((pc,3),(1,1),"CPUD").
+entry((pc,3),(0,2),"OSBeta").   entry((pc,3),(1,2),"CPUS").
 
 % crc1: Intended internet usage or multimedia usage (attribute of PC)
 %       requires the existence of an Internet connection (InternetConn).
@@ -156,9 +165,16 @@ condition((pc,5),(usage,()),"multimedia").
 requires((pc,4),(internet_conn,())).
 
 % crc2: scientific usage requires CPUs of type CPUD
-constraint((pc,6),"requires").
-condition((pc,6),(usage,()),"scientific").
-requires((pc,6),(type,(cpu,())),"CPUD").
+% constraint((pc,6),"requires").
+% condition((pc,6),(usage,()),"scientific").
+% requires((pc,6),(type,(cpu,())),"CPUD").
+constraint((pc,6),"table").
+column((pc,6),0,(usage,())).        column((pc,6),1,(type,(cpu,()))).
+entry((pc,6),(0,0),"scientific").   entry((pc,6),(1,0),"CPUD").
+entry((pc,6),(0,1),"multimedia").   entry((pc,6),(1,1),"CPUD").
+entry((pc,6),(0,2),"multimedia").   entry((pc,6),(1,2),"CPUS").
+entry((pc,6),(0,3),"internet").     entry((pc,6),(1,3),"CPUD").
+entry((pc,6),(0,4),"internet").     entry((pc,6),(1,4),"CPUS").
 
 % crc3: The required energy efficiency (attribute efficiency of PC) must be supported by the MB
 % Is this an equal or gte?
