@@ -18,7 +18,7 @@ part(pc,hd_unit,hd_unit,1,2).
 part(pc,mb,mb,1,1).
 part(pc,screen,screen,1,2).
 part(pc,os,os,1,1).
-part(pc,app,app,1,#sup).
+part(pc,app,app,1,5).
 part(hd_unit,hd_disk,hd_disk,1,4).
 part(hd_disk,disk_port,disk_port,1,1).
 part(hd_unit,hd_controller,hd_controller,1,2).
@@ -149,13 +149,11 @@ requires((pc,3),(type,(cpu,())),"CPUD").
 %       requires the existence of an Internet connection (InternetConn).
 constraint((pc,4),"requires").
 condition((pc,4),(usage,()),"internet").
-requires((pc,4),(internet_conn,()),1). % Supposed to express that there needs to be one (exactly or at least?) object with internet_conn
-% requires((pc,4),(internet_conn,())). % Alternatively use requires/2 for objects?
+requires((pc,4),(internet_conn,())).
 
 constraint((pc,5),"requires").
 condition((pc,5),(usage,()),"multimedia").
-requires((pc,5),(internet_conn,()),1).
-% requires((pc,4),(internet_conn,())).
+requires((pc,4),(internet_conn,())).
 
 % crc2: scientific usage requires CPUs of type CPUD
 constraint((pc,6),"requires").
@@ -163,11 +161,13 @@ condition((pc,6),(usage,()),"scientific").
 requires((pc,6),(type,(cpu,())),"CPUD").
 
 % crc3: The required energy efficiency (attribute efficiency of PC) must be supported by the MB
+% Is this an equal or gte?
 constraint((pc,7),"eq").
-left((pc,7),(efficiency,()),).
+left((pc,7),(efficiency,())).
 right((pc,7),(efficiency,(mb,()))).
 
 % crc4: The required energy efficiency (attribute efficiency of PC) must be supported by the included Screens.
+% Is this an equal or gte?
 constraint((pc,8),"eq").
-left((pc,8),(efficiency,()),).
+left((pc,8),(efficiency,())).
 right((pc,8),(efficiency,(screen,()))).

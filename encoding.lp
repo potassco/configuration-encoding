@@ -102,6 +102,10 @@ val((O,D),V) :- object(O,T), attr(T,D,"max"), V = #max { V',X,P : path(T,D,P), v
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Constraints
 %%%%%%%%%%%%%%%%%%%%%%%%%
+
+% All constraints need to be satisfied
+:- unsat(C).
+
 %%% Table constraints
 
 % Generate cross product tuples for each object and corresponding constraint
@@ -135,8 +139,21 @@ sat_pair(C,X1,X2) :- left_compare(C,"gt",X1), right_compare(C,"gt",X2), val(X1,V
 sat_pair(C,X1,X2) :- left_compare(C,"gte",X1), right_compare(C,"gte",X2), val(X1,V1), val(X2,V2), V1 >= V2.
 
 % A comparison constraint is not satisfied if some pair of attribute variables does not satisfy it
-unsat(C) :- left_compare(C,Op,X1), right_compare(C,Op,X2), not sat_pair(C,X1,X2), Op != "table".
+unsat(C) :- left_compare(C,Op,X1), right_compare(C,Op,X2), not sat_pair(C,X1,X2), Op != "table", Op != "requires".
 
-:- unsat(C).
+%%% Requires constraints
+% Assumes that the requirement has to hold for all objects/attributes in question
+sat_condition((O,C)):- object(O,T), constraint((T,C),"requires"), condition((T,C),P,V), selector(O,P,X), val(X,V).
 
-#show val/2.
+sat_req((O,C),X,V) :- object(O,T), sat_condition((O,C)), requires((T,C),P,V), selector(O,P,X). %, not val(X,V).
+
+% selector((),(volume,(bags,())),((bags,((),0)),volume)).
+
+
+% #show selector/3.
+#show sat_condition/1.
+#show sat_req/3.
+
+
+
+% #show val/2.
