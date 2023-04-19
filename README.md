@@ -20,7 +20,7 @@ val(((frontWheel,((),0)),size),18)
 val(((rearWheel,((),0)),size),18)
 ```
 
-For a bit more involved example you can the bike examples (has about 600 stable models)
+For a bit more involved example you can the bike example (has about 600 stable models)
 ```
 clingo encoding.lp examples/bike/model.lp --opt-mode=enum 0
 ```
