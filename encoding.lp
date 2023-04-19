@@ -2,7 +2,7 @@
 %%% Configuration model check
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % Partonomy has to be acyclic and rooted
-partonomic_path(X,Y) :- part(X,Y,_,_,_).
+partonomic_path(X,Y) :- part(X,Y,_).
 partonomic_path(X,Z) :- partonomic_path(X,Y), partonomic_path(Y,Z).
 :- partonomic_path(X,X).
 
@@ -19,7 +19,7 @@ attr(T,D,"atomic") :- attr(T,D).
 :- attr(T,D,E), attr(T,D,E'), E < E'.
 
 % Set of port and attribute descriptors has to be disjoint
-descriptor("port",D) :- part(_,_,D,_,_).
+descriptor("port",D) :- part(_,_,D).
 descriptor("attribute",D) :- attr(_,D,_).
 :- descriptor("port",D), descriptor("attribute",D).
 
@@ -48,27 +48,28 @@ max_column_index(C,N) :- constraint(C,"table"), N = #max{ Col : column(C,Col,_)}
 
 % There needs to be always a root object
 object(()).
+object((),T) :- object(()), root(T).
 
 % Object generation
-Min { object((D,(P,I))) : I = 0..Max } Max :- object(P,S), part(S,T,D,Min,Max).
-% Check partonomic cardinalities, still needed?
-% count(S,T,D,X) :- part(S,T,D,Min,Max), X = #count { IS,IT : association((S,IS),(T,IT),D) }.
+minmax(S,T,D,Min,Max) :- part(S,T,D),
+                                        Min = #min { N : multiplicity(S,T,D,N)},
+                                        Max = #max { N : multiplicity(S,T,D,N)}.
+
+object((D,(P,0..Min-1)),T) :- object(P,S), part(S,T,D), minmax(S,T,D,Min,_).
+
+{ object((D,(P,I)),T) : I = Min..Max-1 } :- object(P,S), part(S,T,D), minmax(S,T,D,Min,Max). %, Min < Max.
+object(O) :- object(O,T).
 
 % Use indices in ascending order
 :- object((D,(P,I))), not object((D,(P,I-1))), I > 0.
 
-% Generate associations between objects
-association((()), (D,((),I))) :- object((D,((),I))).
-association((D1,(P,I1)), (D2,((D1,(P,I1)),I2))) :- object((D2,((D1,(P,I1)),I2))).
+% Check part and connection cardinalities
+port(S,T,D,"partonomic") :- part(S,T,D).
+% port(S,T,D,"connection") :- connection(S,T,D).
 
-% Determine types of objects and reverse
-object((),T) :- object(()), root(T).
-object(O',T) :- association(O,O'), object(O,S), O' = ((D,_)), part(S,T,D,_,_).
-object(O) :- object(O,T).
-
-
-% Match associations and parts TODO
-
+% Port multiplicities need to be satisfied for each object
+count(O,D,X) :- object(O,S), part(S,T,D), X = #count { I : object((D,(O,I)),T) }.
+:- part(S,T,D), object(O,S), count(O,D,X), not multiplicity(S,T,D,X).
 
 % Assign values to attribute variables
 { val((O,D),V) : dom(T,D,V) } :- object(O,T), attr(T,D,"atomic").
@@ -104,39 +105,39 @@ val((O,D),V) :- object(O,T), attr(T,D,"max"), V = #max { V',X,P : path(T,D,P), v
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Table constraints
 
-% Generate cross product tuples for each object and corresponding constraint
-var_tuple((O,C),N,((),X)) :- object(O,T), max_column_index((T,C),N), selector(O,P,X), column((T,C),N,P).
-var_tuple((O,C),N,(VT,X)) :- object(O,T), var_tuple((O,C),N+1,VT), selector(O,P,X), column((T,C),N,P), N>=0.
+% % Generate cross product tuples for each object and corresponding constraint
+% var_tuple((O,C),N,((),X)) :- object(O,T), max_column_index((T,C),N), selector(O,P,X), column((T,C),N,P).
+% var_tuple((O,C),N,(VT,X)) :- object(O,T), var_tuple((O,C),N+1,VT), selector(O,P,X), column((T,C),N,P), N>=0.
 
-% For each tuple check that it satisfies some row
-% by unpacking the nested tuples and checking the columns from left to right
-sat_row((O,C),VT,(0,Row),VT') :- object(O,T), var_tuple((O,C),0,VT), VT = (VT',X), val(X,V), entry((T,C),(0,Row),V).
-sat_row((O,C),VT,(Col,Row),VT'') :- object(O,T), sat_row((O,C),VT,(Col-1,Row),VT'), VT' = (VT'',X), val(X,V), entry((T,C),(Col,Row),V).
+% % For each tuple check that it satisfies some row
+% % by unpacking the nested tuples and checking the columns from left to right
+% sat_row((O,C),VT,(0,Row),VT') :- object(O,T), var_tuple((O,C),0,VT), VT = (VT',X), val(X,V), entry((T,C),(0,Row),V).
+% sat_row((O,C),VT,(Col,Row),VT'') :- object(O,T), sat_row((O,C),VT,(Col-1,Row),VT'), VT' = (VT'',X), val(X,V), entry((T,C),(Col,Row),V).
 
-% A table constraint is not satisfied if some tuple does not satisfy all values in a row
-unsat(C) :- var_tuple(C,0,VT), not sat_row(C,VT,_,()).
+% % A table constraint is not satisfied if some tuple does not satisfy all values in a row
+% unsat(C) :- var_tuple(C,0,VT), not sat_row(C,VT,_,()).
 
-%%% Comparison constraints
-left_compare((O,C),Op,X) :- object(O,T), constraint((T,C),Op), left((T,C),P), selector(O,P,X).
-right_compare((O,C),Op,X) :- object(O,T), constraint((T,C),Op), right((T,C),P), selector(O,P,X).
+% %%% Comparison constraints
+% left_compare((O,C),Op,X) :- object(O,T), constraint((T,C),Op), left((T,C),P), selector(O,P,X).
+% right_compare((O,C),Op,X) :- object(O,T), constraint((T,C),Op), right((T,C),P), selector(O,P,X).
 
-left_compare((O,C),Op,P) :- object(O,T), constraint((T,C),Op), left((T,C),P), P = constant(N).
-right_compare((O,C),Op,P) :- object(O,T), constraint((T,C),Op), right((T,C),P), P = constant(N).
+% left_compare((O,C),Op,P) :- object(O,T), constraint((T,C),Op), left((T,C),P), P = constant(N).
+% right_compare((O,C),Op,P) :- object(O,T), constraint((T,C),Op), right((T,C),P), P = constant(N).
 
-% Auxiliary val atoms for comparison with constants
-val(P,N) :- left_compare(_,_,P), P=constant(N).
-val(P,N) :- right_compare(_,_,P), P=constant(N).
+% % Auxiliary val atoms for comparison with constants
+% val(P,N) :- left_compare(_,_,P), P=constant(N).
+% val(P,N) :- right_compare(_,_,P), P=constant(N).
 
-sat_pair(C,X1,X2) :- left_compare(C,"eq",X1), right_compare(C,"eq",X2), val(X1,V1), val(X2,V2), V1 = V2.
-sat_pair(C,X1,X2) :- left_compare(C,"neq",X1), right_compare(C,"neq",X2), val(X1,V1), val(X2,V2), V1 != V2.
-sat_pair(C,X1,X2) :- left_compare(C,"lt",X1), right_compare(C,"lt",X2), val(X1,V1), val(X2,V2), V1 < V2.
-sat_pair(C,X1,X2) :- left_compare(C,"lte",X1), right_compare(C,"lte",X2), val(X1,V1), val(X2,V2), V1 <= V2.
-sat_pair(C,X1,X2) :- left_compare(C,"gt",X1), right_compare(C,"gt",X2), val(X1,V1), val(X2,V2), V1 > V2.
-sat_pair(C,X1,X2) :- left_compare(C,"gte",X1), right_compare(C,"gte",X2), val(X1,V1), val(X2,V2), V1 >= V2.
+% sat_pair(C,X1,X2) :- left_compare(C,"eq",X1), right_compare(C,"eq",X2), val(X1,V1), val(X2,V2), V1 = V2.
+% sat_pair(C,X1,X2) :- left_compare(C,"neq",X1), right_compare(C,"neq",X2), val(X1,V1), val(X2,V2), V1 != V2.
+% sat_pair(C,X1,X2) :- left_compare(C,"lt",X1), right_compare(C,"lt",X2), val(X1,V1), val(X2,V2), V1 < V2.
+% sat_pair(C,X1,X2) :- left_compare(C,"lte",X1), right_compare(C,"lte",X2), val(X1,V1), val(X2,V2), V1 <= V2.
+% sat_pair(C,X1,X2) :- left_compare(C,"gt",X1), right_compare(C,"gt",X2), val(X1,V1), val(X2,V2), V1 > V2.
+% sat_pair(C,X1,X2) :- left_compare(C,"gte",X1), right_compare(C,"gte",X2), val(X1,V1), val(X2,V2), V1 >= V2.
 
-% A comparison constraint is not satisfied if some pair of attribute variables does not satisfy it
-unsat(C) :- left_compare(C,Op,X1), right_compare(C,Op,X2), not sat_pair(C,X1,X2), Op != "table".
+% % A comparison constraint is not satisfied if some pair of attribute variables does not satisfy it
+% unsat(C) :- left_compare(C,Op,X1), right_compare(C,Op,X2), not sat_pair(C,X1,X2), Op != "table".
 
-:- unsat(C).
+% :- unsat(C).
 
-#show val/2.
+% #show val/2.
