@@ -20,8 +20,8 @@ multiplicity(frame,bag,bag,1).
 multiplicity(frame,bag,bag,2).
 
 part(wheel,bag,bag).
-multiplicity(frame,bag,bag,0).
-multiplicity(frame,bag,bag,2).
+multiplicity(wheel,bag,bag,0).
+multiplicity(wheel,bag,bag,2).
 
 %%% Attributes
 attr(bike,totalWeight,"sum").
@@ -53,7 +53,7 @@ path(bike,stowage,(volume,(bag,(frame,())))).
 
 %%% Constraints
 constraint((bike,0),"eq").
-    left((bike,0),  (siz0,(frontWheel,()))).
+    left((bike,0),  (size,(frontWheel,()))).
     right((bike,0), (size,(rearWheel,()))).
 
 constraint((bike,1),"lte").

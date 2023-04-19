@@ -140,4 +140,20 @@ unsat(C) :- left_compare(C,Op,X1), right_compare(C,Op,X2), not sat_pair(C,X1,X2)
 
 :- unsat(C).
 
+% Define statements
+#defined type/1.
+#defined part/3.
+#defined multiplicity/4.
+#defined connection/3.
+#defined attr/2.
+#defined attr/3.
+#defined dom/3.
+#defined path/3.
+#defined constraint/2.
+#defined column/3.
+#defined entry/3.
+#defined left/2.
+#defined right/2.
+
+#show object/2.
 #show val/2.
