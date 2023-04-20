@@ -82,7 +82,7 @@ attr(node,(T,I),label,@concat(
                         "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0' CELLPADDING='1'>",
                         "<TR><TD ><B>({{name.capitalize()}},{{index}})</B></TD></TR>",
                         "<TR><TD >{{expr|e}}</TD></TR>",
-                        "</TABLE>>")) :- constraint((T,I),Kind), Kind != "table".
+                        "</TABLE>>"))                        :- constraint((T,I),Kind), Kind != "table".
 attr(node,(T,I),label,@concat(
                         % "{% set header = header|default({}) %}",
                         % "{% set entry = entry|default({}) %}",
@@ -95,17 +95,34 @@ attr(node,(T,I),label,@concat(
                                 "{{ entry[(r|int,c|int)] }}",
                             "</TD> {% endfor %}",
                         "</TR> {% endfor %}",
-                        "</TABLE>>")) :- constraint((T,I),"table").
+                        "</TABLE>>"))       :- constraint((T,I),"table").
 
 
 attr(node,(T,I),(label,name),T)             :- constraint((T,I),_).
-attr(node,(T,I),(label,index),I)             :- constraint((T,I),_).
-attr(node,(T,I),(label,expr),@format("{0} {2} {1}",P1,P2,S)) :- constraint((T,I),Kind), symbol(Kind,S), left((T,I),P1), right((T,I),P2).
+attr(node,(T,I),(label,index),I)            :- constraint((T,I),_).
+attr(node,(T,I),(label,expr),@format("{0} {2} {1}",@dis(P1),@dis(P2),S))
+                                            :- constraint((T,I),Kind), symbol(Kind,S), left((T,I),P1), right((T,I),P2).
 
-attr(node,(T,I),(label,header,Col),@format("{0}",P)) :- constraint((T,I),"table"), column((T,I),Col,P).
-attr(node,(T,I),(label,entry,(Row,Col)),@format("{0}",V)) :- constraint((T,I),"table"), entry((T,I),(Col,Row),V).
-attr(node,(T,I),(label,cols,Col),@format("{0}",Col)) :- constraint((T,I),"table"),  entry((T,I),(Col,_),_).
-attr(node,(T,I),(label,rows,Row),@format("{0}",Row)) :- constraint((T,I),"table"), entry((T,I),(_,Row),_).
+attr(node,(T,I),(label,header,Col),@format("{0}",@dis(P)))
+                                            :- constraint((T,I),"table"), column((T,I),Col,P).
+attr(node,(T,I),(label,entry,(Row,Col)),@format("{0}",V))    :- constraint((T,I),"table"), entry((T,I),(Col,Row),V).
+attr(node,(T,I),(label,cols,Col),@format("{0}",Col))         :- constraint((T,I),"table"),  entry((T,I),(Col,_),_).
+attr(node,(T,I),(label,rows,Row),@format("{0}",Row))         :- constraint((T,I),"table"), entry((T,I),(_,Row),_).
+
+#script (python)
+from clingo.symbol import String
+
+def dis(path):
+    disentangled = disentangle(path,[])
+    return String(f'({",".join(disentangled)})')
+
+def disentangle(input,output):
+    output.insert(0,str(input.arguments[0]))
+
+    if str(input.arguments[1]) != "()":
+        output = disentangle(input.arguments[1],output)
+    return output
+#end.
 
 symbol("eq","==").
 symbol("lt","<").
