@@ -52,8 +52,8 @@ object((),T) :- object(()), root(T).
 
 % Object generation
 minmax(S,T,D,Min,Max) :- part(S,T,D),
-                                        Min = #min { N : multiplicity(S,T,D,N)},
-                                        Max = #max { N : multiplicity(S,T,D,N)}.
+                            Min = #min { N : multiplicity(S,T,D,N)},
+                            Max = #max { N : multiplicity(S,T,D,N)}.
 
 object((D,(P,0..Min-1)),T) :- object(P,S), part(S,T,D), minmax(S,T,D,Min,_).
 
