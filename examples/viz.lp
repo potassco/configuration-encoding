@@ -75,7 +75,7 @@ attr(edge,(S,T,D),(headlabel,n,N),N) :- multiplicity(S,T,D,N).
 graph(const,default).
 attr(graph,const,label,"Constraints").
 % attr(graph,const,style,invis).
-edge(T,(T,I)) :- constraint((T,I),_).
+% edge((T,(T,I))) :- constraint((T,I),_).
 node((T,I),const) :- constraint((T,I),_).
 
 attr(node,(T,I),label,@concat(
@@ -86,11 +86,15 @@ attr(node,(T,I),label,@concat(
 attr(node,(T,I),label,@concat(
                         % "{% set header = header|default({}) %}",
                         % "{% set entry = entry|default({}) %}",
-                        "{% set cols=header|length %}",
+                        "{% set num_col=header|length %}",
                         "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0' CELLPADDING='1'>",
-                        "<TR><TD COLSPAN='{{cols}}'><B>({{name.capitalize()}},{{index}})</B></TD></TR>",
-                        "<TR>{% for key,value in header|dictsort(by='key') %}<TD ALIGN='left'> {{value.split(';;')[1]}} </TD>{% endfor %}</TR>",
-                        % "{% for }"
+                        "<TR><TD COLSPAN='{{num_col}}'><B>({{name.capitalize()}},{{index}})</B></TD></TR>",
+                        "<TR>{% for key,p in header|dictsort %}<TD ALIGN='left'> {{p}} </TD>{% endfor %}</TR>",
+                        "{% for r in rows.values() %} <TR>",
+                            "{% for c in cols.values() %} <TD>",
+                                "{{ entry[(r|int,c|int)] }}",
+                            "</TD> {% endfor %}",
+                        "</TR> {% endfor %}",
                         "</TABLE>>")) :- constraint((T,I),"table").
 
 
@@ -98,7 +102,11 @@ attr(node,(T,I),(label,name),T)             :- constraint((T,I),_).
 attr(node,(T,I),(label,index),I)             :- constraint((T,I),_).
 attr(node,(T,I),(label,expr),@format("{0} <B>{2}</B> {1}",P1,P2,S)) :- constraint((T,I),Kind), symbol(Kind,S), left((T,I),P1), right((T,I),P2).
 
-attr(node,(T,I),(label,header,P),@format("{0};;{1}",Col,P)) :- constraint((T,I),"table"), column((T,I),Col,P).
+attr(node,(T,I),(label,header,Col),@format("{0}",P)) :- constraint((T,I),"table"), column((T,I),Col,P).
+attr(node,(T,I),(label,entry,(Row,Col)),@format("{0}",V)) :- constraint((T,I),"table"), entry((T,I),(Col,Row),V).
+attr(node,(T,I),(label,cols,Col),@format("{0}",Col)) :- constraint((T,I),"table"),  entry((T,I),(Col,_),_).
+attr(node,(T,I),(label,rows,Row),@format("{0}",Row)) :- constraint((T,I),"table"), entry((T,I),(_,Row),_).
+
 
 
 
