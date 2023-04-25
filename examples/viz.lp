@@ -8,7 +8,6 @@ attr(graph,default,ranksep,"0.02").
 
 
 
-
 %%%%%%%%%%%%%%%%%%
 %%% Type and part graph
 %%%%%%%%%%%%%%%%%%
@@ -29,12 +28,12 @@ attr(node,T,label,@concat(
                         "{% set attr = attr|default({}) %}",
                         "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0' CELLPADDING='1'>",
                         "<TR><TD ><B>{{name.capitalize()}} </B></TD></TR>",
-                        "<TR><TD ALIGN='left'> {% for a in attr.values() %} {{a}} {% endfor %} </TD></TR>",
+                        "<TR><TD ALIGN='left'> {% for key,a in attr|dictsort %} {{a}} {% endfor %} </TD></TR>",
                         "</TABLE>>"))   :- type(T).
 
 attr(node,T,(label,name),T)             :- type(T).
-attr(node,T,(label,attr,D),@format("<B>{0}: {1}</B><br ALIGN='left' />",D,F)) :- attr(T,D,F).
-attr(node,T,(label,attr,D),@format("{0}<br ALIGN='left' />",D)) :- attr(T,D).
+attr(node,T,(label,attr,(0,D)),@format("<B>{0}: {1}</B><br ALIGN='left' />",D,F)) :- attr(T,D,F). % Aggregate attributes
+attr(node,T,(label,attr,(1,D)),@format("{0}<br ALIGN='left' />",D)) :- attr(T,D). % Atomic attributes
 
 attr(node, T, shape, rectangle)         :- type(T).
 attr(node, T, style, "filled")          :- type(T).
@@ -54,7 +53,6 @@ attr(edge,(S,T,D),minlen,1)                     :- part(S,T,D).
 
 attr(edge,(S,T,D),label,@concat("<<TABLE BORDER='0' CELLSPACING='0' CELLPADDING='1'>",
                                     "<TR><TD><FONT>{{name}}</FONT></TD></TR>",
-                                    % "<TR><TD>{ {% for x in n.values() %} {{x}}, {% endfor %} }</TD></TR>",
                                     "<TR><TD>{ {{n.values() | list | join(', ')}} }</TD></TR>",
                                     "</TABLE>>")) :- part(S,T,D).
 
@@ -168,6 +166,7 @@ def cluster(s):
 #defined type/1.
 #defined part/3.
 #defined multiplicity/4.
+#defined attr/2.
 #defined attr/3.
 #defined object/2.
 #defined association/2.
