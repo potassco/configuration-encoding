@@ -1,15 +1,5 @@
 graph(default).
-graph(model,default).
-attr(graph,model,label,"Configuration Model").
-
-
-
-% attr(graph,model,fontsize,20).
-attr(graph,model,style,invis).
-% attr(graph_nodes,model,penwidth,"1.5").
-attr(graph_edges,model,arrowhead,empty).
-attr(graph_edges,model,style,solid).
-% attr(graph_edges,model,penwidth,"1.5").
+attr(graph,default,compound,true). % <---- Needed for ltail to work
 
 % attr(graph,default,splines,ortho).
 attr(graph,default,rankdir,"TB").
@@ -18,19 +8,27 @@ attr(graph,default,ranksep,"0.02").
 
 
 
-%%% Model
+
+%%%%%%%%%%%%%%%%%%
+%%% Type and part graph
+%%%%%%%%%%%%%%%%%%
+graph(model,default).
+attr(graph,model,label,"Configuration Model").
+
+% attr(graph,model,fontsize,20).
+attr(graph,model,style,invis).
+% attr(graph_nodes,model,penwidth,"1.5").
+attr(graph_edges,model,arrowhead,empty).
+attr(graph_edges,model,style,solid).
+% attr(graph_edges,model,penwidth,"1.5").
+
 % Generate nodes
 node(T,model)                           :- type(T).
-% attr(node,T,label,"<<b>{{name.capitalize()}}</b>>")  :- type(T).
-
-
 
 attr(node,T,label,@concat(
-                        % "{% set aggr = aggr|default({}) %}",
                         "{% set attr = attr|default({}) %}",
                         "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0' CELLPADDING='1'>",
                         "<TR><TD ><B>{{name.capitalize()}} </B></TD></TR>",
-                        % "<TR><TD ALIGN='left'> {% for a in aggr.values() %} {{a}} {% endfor %} </TD></TR>",
                         "<TR><TD ALIGN='left'> {% for a in attr.values() %} {{a}} {% endfor %} </TD></TR>",
                         "</TABLE>>"))   :- type(T).
 
@@ -40,28 +38,19 @@ attr(node,T,(label,attr,D),@format("{0}<br ALIGN='left' />",D)) :- attr(T,D).
 
 attr(node, T, shape, rectangle)         :- type(T).
 attr(node, T, style, "filled")          :- type(T).
-attr(node, T, fillcolor, "#FFFFCE")     :- type(T).
+attr(node, T, fillcolor, "#fdfdb4")     :- type(T).
 attr(node, T, color, "black")           :- type(T).
 attr(node, T, margin, 0)                :- type(T).
 attr(node, T, width, 0)                 :- type(T).
 attr(node, T, height, 0)                :- type(T).
 
-% attr(graph_nodes, model, shape, rectangle).
-% attr(graph_nodes, model, style, "filled").
-% attr(graph_nodes, model, fillcolor, "#FFFFCE").
-% attr(graph_nodes, model, color, "black").
-% attr(graph_nodes, model, margin, 0).
-% attr(graph_nodes, model, width, 0).
-% attr(graph_nodes, model, height, 0).
 
-% Generate edges and nodes for parts
+% Generate edges for parts
 edge((S,T,D),model)                             :- part(S,T,D).
 attr(edge,(S,T,D),arrowhead,empty)              :- part(S,T,D).
-% attr(edge,(S,T,D),label,D)                      :- part(S,T,D).
 attr(edge,(S,T,D),fontsize,10)                  :- part(S,T,D).
 attr(edge,(S,T,D),minlen,1)                     :- part(S,T,D).
 
-% attr(edge,(S,T,D),headlabel,"{ {% for x in n.values() %} {{x}} {% endfor %} }") :- part(S,T,D).
 
 attr(edge,(S,T,D),label,@concat("<<TABLE BORDER='0' CELLSPACING='0' CELLPADDING='1'>",
                                     "<TR><TD><FONT>{{name}}</FONT></TD></TR>",
@@ -72,9 +61,6 @@ attr(edge,(S,T,D),label,@concat("<<TABLE BORDER='0' CELLSPACING='0' CELLPADDING=
 attr(edge,(S,T,D),(label,name),D) :- part(S,T,D).
 attr(edge,(S,T,D),(label,n,N),N) :- multiplicity(S,T,D,N).
 
-% edge((S,(S,D,"port")),model)   :- part(S,T,D).
-% node((S,D,"port"),model)       :- part(S,T,D).
-% edge(((S,D,"port"),T),model)   :- part(S,T,D).
 
 % % attr(edge,(S,(S,D,"port")),style,normal)    :- part(S,T,D).
 % attr(edge,(S,(S,D,"port")),arrowhead,none)  :- part(S,T,D).
@@ -85,46 +71,32 @@ attr(edge,(S,T,D),(label,n,N),N) :- multiplicity(S,T,D,N).
 % attr(node,(S,D,"port"),height,"0.01")       :- part(S,T,D).
 % attr(node,(S,D,"port"),label,D)             :- part(S,T,D).
 
-
+%%%%%%%%%%%%%%%%%%
 %%% Constraints
-% graph(const,default).
-% attr(graph,const,label,"Constraints").
-% attr(graph,const,style,invis).
+%%%%%%%%%%%%%%%%%%
+graph((constraints,T),default)                      :- constraint((T,_),_).
+attr(graph,(constraints,T),style,"filled")          :- constraint((T,_),_).
+attr(graph,(constraints,T),fillcolor,"#f4f4f4")     :- constraint((T,_),_).
 
-graph((constraints,T),default) :- constraint((T,_),_).
+% One node for each constraints
+node((T,I),(constraints,T)) :- constraint((T,I),_).
+attr(node, (T,I), shape, rectangle) :- constraint((T,I),_).
+attr(node, (T,I), margin, 0)        :- constraint((T,I),_).
+attr(node, (T,I), width, 0)         :- constraint((T,I),_).
+attr(node, (T,I), height, 0)        :- constraint((T,I),_).
 
-attr(graph,(constraints,T),rankdir,"TB") :- constraint((T,_),_).
-% attr(graph,(constraints,T),nodesep,"0.2") :- constraint((T,_),_).
-attr(graph,(constraints,T),ranksep,"0.02") :- constraint((T,_),_).
-
-% link((X1,R1),(X2,R2)):- door(R1,R2), thing(X1,R1), thing(X2,R2),
-%     #false: thing(X1',R1), X1>X1' ; #false: thing(X2',R2), X2>X2'.
-%     % Linking only one thing on the room to another thing in the adjecent room
-% edge((X1,X2),house):-link((X1,R1),(X2,R2)).
+% Connect types with their constraints
 edge((T,(T,0))) :- constraint((T,0),_).
-attr(graph,default,compound,true). % <---- Needed for ltail to work
-% attr(edge,(X1,X2),ltail,@cluster(R1)):-link((X1,R1),(X2,R2)) .
 attr(edge,(T,(T,0)),lhead,@cluster((constraints,T))) :- constraint((T,0),_).
 attr(edge,(T,(T,0)),arrowhead,none)                  :- constraint((T,0),_).
 
-% Group table constraints
+% Sort table constraints
 edge(((T,I1),(T,I2))) :- constraint((T,I1),_), constraint((T,I2),_), I2 = I1 +1.
 attr(edge,((T,I1),(T,I2)),style,invis) :- constraint((T,I1),_), constraint((T,I2),_), I2 = I1 +1.
 
-% Connect table constraints with types
-% edge((T,(T,I))) :- constraint((T,I),_).
-% attr(edge,(T,(T,I)),style,invis) :- constraint((T,I),_).
 
 % Table constraints
-node((T,I),(constraints,T)) :- constraint((T,I),_).
 attr(node,(T,I),label,@concat(
-                        "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0' CELLPADDING='1'>",
-                        "<TR><TD ><B>({{name.capitalize()}},{{index}})</B></TD></TR>",
-                        "<TR><TD >{{expr|e}}</TD></TR>",
-                        "</TABLE>>"))                        :- constraint((T,I),Kind), Kind != "table".
-attr(node,(T,I),label,@concat(
-                        % "{% set header = header|default({}) %}",
-                        % "{% set entry = entry|default({}) %}",
                         "{% set num_col=header|length %}",
                         "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0' CELLPADDING='1'>",
                         "<TR><TD COLSPAN='{{num_col}}'><B>({{name.capitalize()}},{{index}})</B></TD></TR>",
@@ -139,8 +111,7 @@ attr(node,(T,I),label,@concat(
 
 attr(node,(T,I),(label,name),T)             :- constraint((T,I),_).
 attr(node,(T,I),(label,index),I)            :- constraint((T,I),_).
-attr(node,(T,I),(label,expr),@format("{0} {2} {1}",@dis(P1),@dis(P2),S))
-                                            :- constraint((T,I),Kind), symbol(Kind,S), left((T,I),P1), right((T,I),P2).
+
 
 attr(node,(T,I),(label,header,Col),     @format("{0}",@dis(P)))
                                                             :- constraint((T,I),"table"), column((T,I),Col,P).
@@ -148,16 +119,22 @@ attr(node,(T,I),(label,entry,(Row,Col)),@format("{0}",V))   :- constraint((T,I),
 attr(node,(T,I),(label,cols,Col),       @format("{0}",Col)) :- constraint((T,I),"table"),  entry((T,I),(Col,_),_).
 attr(node,(T,I),(label,rows,Row),       @format("{0}",Row)) :- constraint((T,I),"table"), entry((T,I),(_,Row),_).
 
-attr(node, (T,I), shape, rectangle) :- constraint((T,I),_).
-attr(node, (T,I), margin, 0)        :- constraint((T,I),_).
-attr(node, (T,I), width, 0)         :- constraint((T,I),_).
-attr(node, (T,I), height, 0)        :- constraint((T,I),_).
+% Comparison constraints
+attr(node,(T,I),label,@concat(
+                        "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0' CELLPADDING='1'>",
+                        "<TR><TD ><B>({{name.capitalize()}},{{index}})</B></TD></TR>",
+                        "<TR><TD >{{expr|e}}</TD></TR>",
+                        "</TABLE>>"))                        :- constraint((T,I),Kind), Kind != "table".
+
+attr(node,(T,I),(label,expr),@format("{0} {2} {1}",@dis(P1),@dis(P2),S))
+                                            :- constraint((T,I),Kind), symbol(Kind,S), left((T,I),P1), right((T,I),P2).
 
 symbol("eq","==").
 symbol("lt","<").
 symbol("lte","<=").
 symbol("gt",">").
 symbol("gte",">=").
+
 
 
 #script (python)
@@ -187,6 +164,13 @@ def cluster(s):
     val = str(s).strip('"')
     return String("cluster_"+val)
 #end.
+
+#defined type/1.
+#defined part/3.
+#defined multiplicity/4.
+#defined attr/3.
+#defined object/2.
+#defined association/2.
 
 
 % attr(graph_nodes, const, shape, rectangle).
@@ -239,9 +223,3 @@ def cluster(s):
 % attr(graph_edges,default,arrowhead,none).
 % attr(graph_edges,default,style,dotted).
 
-#defined type/1.
-#defined part/3.
-#defined multiplicity/4.
-#defined attr/3.
-#defined object/2.
-#defined association/2.
