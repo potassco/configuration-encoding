@@ -1,15 +1,21 @@
 graph(default).
 graph(model,default).
 attr(graph,model,label,"Configuration Model").
-% attr(graph,model,splines,ortho).
-attr(graph,model,nodesep,"5").
-attr(graph,model,rankdir,"TB").
+
+
+
 % attr(graph,model,fontsize,20).
 attr(graph,model,style,invis).
 % attr(graph_nodes,model,penwidth,"1.5").
 attr(graph_edges,model,arrowhead,empty).
 attr(graph_edges,model,style,solid).
 % attr(graph_edges,model,penwidth,"1.5").
+
+% attr(graph,default,splines,ortho).
+attr(graph,default,rankdir,"TB").
+% attr(graph,default,nodesep,"0.2").
+attr(graph,default,ranksep,"0.02").
+
 
 
 %%% Model
@@ -26,36 +32,45 @@ attr(node,T,label,@concat(
                         "<TR><TD ><B>{{name.capitalize()}} </B></TD></TR>",
                         % "<TR><TD ALIGN='left'> {% for a in aggr.values() %} {{a}} {% endfor %} </TD></TR>",
                         "<TR><TD ALIGN='left'> {% for a in attr.values() %} {{a}} {% endfor %} </TD></TR>",
-                        "</TABLE>>")) :- type(T).
+                        "</TABLE>>"))   :- type(T).
 
 attr(node,T,(label,name),T)             :- type(T).
 attr(node,T,(label,attr,D),@format("<B>{0}: {1}</B><br ALIGN='left' />",D,F)) :- attr(T,D,F).
 attr(node,T,(label,attr,D),@format("{0}<br ALIGN='left' />",D)) :- attr(T,D).
 
-attr(graph_nodes, model, shape, rectangle).
-attr(graph_nodes, model, style, "filled").
-attr(graph_nodes, model, fillcolor, "#FFFFCE").
-attr(graph_nodes, model, color, "black").
-attr(graph_nodes, model, margin, 0).
-attr(graph_nodes, model, width, 0).
-attr(graph_nodes, model, hight, 0).
+attr(node, T, shape, rectangle)         :- type(T).
+attr(node, T, style, "filled")          :- type(T).
+attr(node, T, fillcolor, "#FFFFCE")     :- type(T).
+attr(node, T, color, "black")           :- type(T).
+attr(node, T, margin, 0)                :- type(T).
+attr(node, T, width, 0)                 :- type(T).
+attr(node, T, height, 0)                :- type(T).
+
+% attr(graph_nodes, model, shape, rectangle).
+% attr(graph_nodes, model, style, "filled").
+% attr(graph_nodes, model, fillcolor, "#FFFFCE").
+% attr(graph_nodes, model, color, "black").
+% attr(graph_nodes, model, margin, 0).
+% attr(graph_nodes, model, width, 0).
+% attr(graph_nodes, model, height, 0).
 
 % Generate edges and nodes for parts
 edge((S,T,D),model)                             :- part(S,T,D).
 attr(edge,(S,T,D),arrowhead,empty)              :- part(S,T,D).
 % attr(edge,(S,T,D),label,D)                      :- part(S,T,D).
 attr(edge,(S,T,D),fontsize,10)                  :- part(S,T,D).
+attr(edge,(S,T,D),minlen,1)                     :- part(S,T,D).
 
 % attr(edge,(S,T,D),headlabel,"{ {% for x in n.values() %} {{x}} {% endfor %} }") :- part(S,T,D).
 
-attr(edge,(S,T,D),headlabel,@concat("<<TABLE BORDER='0' CELLSPACING='0' CELLPADDING='1'>",
+attr(edge,(S,T,D),label,@concat("<<TABLE BORDER='0' CELLSPACING='0' CELLPADDING='1'>",
                                     "<TR><TD><FONT>{{name}}</FONT></TD></TR>",
                                     % "<TR><TD>{ {% for x in n.values() %} {{x}}, {% endfor %} }</TD></TR>",
                                     "<TR><TD>{ {{n.values() | list | join(', ')}} }</TD></TR>",
                                     "</TABLE>>")) :- part(S,T,D).
 
-attr(edge,(S,T,D),(headlabel,name),D) :- part(S,T,D).
-attr(edge,(S,T,D),(headlabel,n,N),N) :- multiplicity(S,T,D,N).
+attr(edge,(S,T,D),(label,name),D) :- part(S,T,D).
+attr(edge,(S,T,D),(label,n,N),N) :- multiplicity(S,T,D,N).
 
 % edge((S,(S,D,"port")),model)   :- part(S,T,D).
 % node((S,D,"port"),model)       :- part(S,T,D).
@@ -72,12 +87,35 @@ attr(edge,(S,T,D),(headlabel,n,N),N) :- multiplicity(S,T,D,N).
 
 
 %%% Constraints
-graph(const,default).
-attr(graph,const,label,"Constraints").
+% graph(const,default).
+% attr(graph,const,label,"Constraints").
 % attr(graph,const,style,invis).
-% edge((T,(T,I))) :- constraint((T,I),_).
-node((T,I),const) :- constraint((T,I),_).
 
+graph((constraints,T),default) :- constraint((T,_),_).
+
+attr(graph,(constraints,T),rankdir,"TB") :- constraint((T,_),_).
+% attr(graph,(constraints,T),nodesep,"0.2") :- constraint((T,_),_).
+attr(graph,(constraints,T),ranksep,"0.02") :- constraint((T,_),_).
+
+% link((X1,R1),(X2,R2)):- door(R1,R2), thing(X1,R1), thing(X2,R2),
+%     #false: thing(X1',R1), X1>X1' ; #false: thing(X2',R2), X2>X2'.
+%     % Linking only one thing on the room to another thing in the adjecent room
+% edge((X1,X2),house):-link((X1,R1),(X2,R2)).
+edge((T,(T,0))) :- constraint((T,0),_).
+attr(graph,default,compound,true). % <---- Needed for ltail to work
+% attr(edge,(X1,X2),ltail,@cluster(R1)):-link((X1,R1),(X2,R2)) .
+attr(edge,(T,(T,0)),lhead,@cluster((constraints,T))) :- constraint((T,0),_).
+
+% Group table constraints
+edge(((T,I1),(T,I2))) :- constraint((T,I1),_), constraint((T,I2),_), I2 = I1 +1.
+attr(edge,((T,I1),(T,I2)),style,invis) :- constraint((T,I1),_), constraint((T,I2),_), I2 = I1 +1.
+
+% Connect table constraints with types
+% edge((T,(T,I))) :- constraint((T,I),_).
+% attr(edge,(T,(T,I)),style,invis) :- constraint((T,I),_).
+
+% Table constraints
+node((T,I),(constraints,T)) :- constraint((T,I),_).
 attr(node,(T,I),label,@concat(
                         "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0' CELLPADDING='1'>",
                         "<TR><TD ><B>({{name.capitalize()}},{{index}})</B></TD></TR>",
@@ -104,10 +142,17 @@ attr(node,(T,I),(label,expr),@format("{0} {2} {1}",@dis(P1),@dis(P2),S))
                                             :- constraint((T,I),Kind), symbol(Kind,S), left((T,I),P1), right((T,I),P2).
 
 attr(node,(T,I),(label,header,Col),@format("{0}",@dis(P)))
-                                            :- constraint((T,I),"table"), column((T,I),Col,P).
-attr(node,(T,I),(label,entry,(Row,Col)),@format("{0}",V))    :- constraint((T,I),"table"), entry((T,I),(Col,Row),V).
-attr(node,(T,I),(label,cols,Col),@format("{0}",Col))         :- constraint((T,I),"table"),  entry((T,I),(Col,_),_).
-attr(node,(T,I),(label,rows,Row),@format("{0}",Row))         :- constraint((T,I),"table"), entry((T,I),(_,Row),_).
+                                                            :- constraint((T,I),"table"), column((T,I),Col,P).
+attr(node,(T,I),(label,entry,(Row,Col)),@format("{0}",V))   :- constraint((T,I),"table"), entry((T,I),(Col,Row),V).
+attr(node,(T,I),(label,cols,Col),@format("{0}",Col))        :- constraint((T,I),"table"),  entry((T,I),(Col,_),_).
+attr(node,(T,I),(label,rows,Row),@format("{0}",Row))        :- constraint((T,I),"table"), entry((T,I),(_,Row),_).
+
+attr(node, (T,I), shape, rectangle) :- constraint((T,I),_).
+attr(node, (T,I), margin, 0)        :- constraint((T,I),_).
+attr(node, (T,I), width, 0)         :- constraint((T,I),_).
+attr(node, (T,I), height, 0)        :- constraint((T,I),_).
+
+
 
 #script (python)
 from clingo.symbol import String
@@ -122,6 +167,17 @@ def disentangle(input,output):
     if str(input.arguments[1]) != "()":
         output = disentangle(input.arguments[1],output)
     return output
+
+def cluster(s):
+    """
+    Returns the cluster name for a graph
+    Args:
+        s: The identifier of the graph
+    Returns:
+        (clingo.Symbol.String) The string with the cluster name
+    """
+    val = str(s).strip('"')
+    return String("cluster_"+val)
 #end.
 
 symbol("eq","==").
@@ -131,15 +187,13 @@ symbol("gt",">").
 symbol("gte",">=").
 
 
-column((wheel,0),1,(weight,())).
-
-attr(graph_nodes, const, shape, rectangle).
-attr(graph_nodes, const, style, "filled").
-attr(graph_nodes, const, fillcolor, "#FFFFFF").
-attr(graph_nodes, const, color, "black").
-attr(graph_nodes, const, margin, 0).
-attr(graph_nodes, const, width, 0).
-attr(graph_nodes, const, hight, 0).
+% attr(graph_nodes, const, shape, rectangle).
+% attr(graph_nodes, const, style, "filled").
+% attr(graph_nodes, const, fillcolor, "#FFFFFF").
+% attr(graph_nodes, const, color, "black").
+% attr(graph_nodes, const, margin, 0).
+% attr(graph_nodes, const, width, 0).
+% attr(graph_nodes, const, height, 0).
 
 
 % % Instantiation
