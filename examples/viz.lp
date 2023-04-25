@@ -142,23 +142,30 @@ attr(node,(T,I),(label,index),I)            :- constraint((T,I),_).
 attr(node,(T,I),(label,expr),@format("{0} {2} {1}",@dis(P1),@dis(P2),S))
                                             :- constraint((T,I),Kind), symbol(Kind,S), left((T,I),P1), right((T,I),P2).
 
-attr(node,(T,I),(label,header,Col),@format("{0}",@dis(P)))
+attr(node,(T,I),(label,header,Col),     @format("{0}",@dis(P)))
                                                             :- constraint((T,I),"table"), column((T,I),Col,P).
 attr(node,(T,I),(label,entry,(Row,Col)),@format("{0}",V))   :- constraint((T,I),"table"), entry((T,I),(Col,Row),V).
-attr(node,(T,I),(label,cols,Col),@format("{0}",Col))        :- constraint((T,I),"table"),  entry((T,I),(Col,_),_).
-attr(node,(T,I),(label,rows,Row),@format("{0}",Row))        :- constraint((T,I),"table"), entry((T,I),(_,Row),_).
+attr(node,(T,I),(label,cols,Col),       @format("{0}",Col)) :- constraint((T,I),"table"),  entry((T,I),(Col,_),_).
+attr(node,(T,I),(label,rows,Row),       @format("{0}",Row)) :- constraint((T,I),"table"), entry((T,I),(_,Row),_).
 
 attr(node, (T,I), shape, rectangle) :- constraint((T,I),_).
 attr(node, (T,I), margin, 0)        :- constraint((T,I),_).
 attr(node, (T,I), width, 0)         :- constraint((T,I),_).
 attr(node, (T,I), height, 0)        :- constraint((T,I),_).
 
+symbol("eq","==").
+symbol("lt","<").
+symbol("lte","<=").
+symbol("gt",">").
+symbol("gte",">=").
 
 
 #script (python)
 from clingo.symbol import String
 
 def dis(path):
+    if str(path.name) == 'constant':
+        return path
     disentangled = disentangle(path,[])
     return String(f'({",".join(disentangled)})')
 
@@ -180,12 +187,6 @@ def cluster(s):
     val = str(s).strip('"')
     return String("cluster_"+val)
 #end.
-
-symbol("eq","==").
-symbol("lt","<").
-symbol("lte","<=").
-symbol("gt",">").
-symbol("gte",">=").
 
 
 % attr(graph_nodes, const, shape, rectangle).
@@ -240,5 +241,7 @@ symbol("gte",">=").
 
 #defined type/1.
 #defined part/3.
+#defined multiplicity/4.
+#defined attr/3.
 #defined object/2.
 #defined association/2.
