@@ -105,6 +105,7 @@ edge((T,(T,0))) :- constraint((T,0),_).
 attr(graph,default,compound,true). % <---- Needed for ltail to work
 % attr(edge,(X1,X2),ltail,@cluster(R1)):-link((X1,R1),(X2,R2)) .
 attr(edge,(T,(T,0)),lhead,@cluster((constraints,T))) :- constraint((T,0),_).
+attr(edge,(T,(T,0)),arrowhead,none)                  :- constraint((T,0),_).
 
 % Group table constraints
 edge(((T,I1),(T,I2))) :- constraint((T,I1),_), constraint((T,I2),_), I2 = I1 +1.
