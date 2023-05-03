@@ -15,7 +15,7 @@ object((),bike)
 object((frontWheel,((),0)),wheel)
 object((rearWheel,((),0)),wheel)
 val(((),color),yellow)
-al(((),wheelSupport),no)
+val(((),wheelSupport),no)
 val(((frontWheel,((),0)),size),18)
 val(((rearWheel,((),0)),size),18)
 ```

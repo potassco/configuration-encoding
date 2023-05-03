@@ -1,5 +1,5 @@
 #!/bin/bash
-viz_file=examples/viz.lp
+viz_file=examples/viz_model.lp
 
 for ex in $(ls examples)
 do

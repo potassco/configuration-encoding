@@ -1,9 +1,11 @@
 graph(default).
 attr(graph,default,compound,true). % <---- Needed for ltail to work
+attr(graph,default,center,true).
 
 % attr(graph,default,splines,ortho).
+% attr(graph,default,newrank,true).
 attr(graph,default,rankdir,"TB").
-% attr(graph,default,nodesep,"0.2").
+attr(graph,default,nodesep,"0.02").
 attr(graph,default,ranksep,"0.02").
 
 
@@ -170,55 +172,3 @@ def cluster(s):
 #defined attr/3.
 #defined object/2.
 #defined association/2.
-
-
-% attr(graph_nodes, const, shape, rectangle).
-% attr(graph_nodes, const, style, "filled").
-% attr(graph_nodes, const, fillcolor, "#FFFFFF").
-% attr(graph_nodes, const, color, "black").
-% attr(graph_nodes, const, margin, 0).
-% attr(graph_nodes, const, width, 0).
-% attr(graph_nodes, const, height, 0).
-
-
-% % Instantiation
-% graph(instantiation,default).
-% attr(graph,instantiation,label,"(Partial) instantiation").
-% attr(graph,instantiation,style,invis).
-% node(O,instantiation) :- object(O,_).
-
-% % Generate edges and nodes for associations
-% edge((S,(D,"assoc")),instantiation)            :- association(S,(D,_)).
-% node((D,"assoc"),instantiation)       :- association(_,(D,_)).
-% edge(((D,"assoc"),T),instantiation)   :- association(_,T), T = (D,_).
-
-
-% attr(edge,(S,(D,"assoc")),arrowhead,none)   :- association(S,(D,_)).
-% % attr(edge,(D,T),arrowhead,normal)           :- association(S,(D,_)).
-% attr(node,(D,"assoc"),label,"")             :- association(_,(D,_)).
-% attr(node,(D,"assoc"),style,invis)          :- association(S,(D,_)).
-% attr(node,(D,"assoc"),fontsize,0)           :- association(S,(D,_)).
-% attr(node,(D,"assoc"),height,"0.02")        :- association(S,(D,_)).
-
-% % Mappings
-% edge((T,O)) :- object(O,T).
-% attr(edge,(T,O),color,blue) :- object(O,T).
-% attr(edge,(T,O),penwidth,"1.8") :- object(O,T).
-
-% edge(((S,D,"port"),(D,"assoc"))) :- part(S,_,D), association(_,(D,_)).
-% attr(edge,((S,D,"port"),(D,"assoc")),color,red) :- part(S,_,D), association(_,(D,_)).
-% attr(edge,((S,D,"port"),(D,"assoc")),penwidth,"1.8") :- part(S,_,D), association(_,(D,_)).
-
-
-
-% %%% Attributes
-% % Model
-
-% % Instantiation
-% attr(graph_edges,instantiation,arrowhead,normal).
-% attr(graph_edges,instantiation,style,solid).
-
-% % Mappings
-% attr(graph_edges,default,arrowhead,none).
-% attr(graph_edges,default,style,dotted).
-
