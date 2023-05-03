@@ -25,11 +25,12 @@ For a bit more involved example you can the bike example (has about 600 stable m
 clingo encoding.lp examples/bike/model.lp --opt-mode=enum 0
 ```
 ## Clingraph (under development)
-Visualize the configuration models with clingraph using e.g.
+Visualize the configuration models with clingraph using the provided script
 ```
-cd examples/bike
-clingraph model.lp --viz-encoding ../viz.lp --type=digraph --out=render  --dir="." --name-format=clingraph --format=png
+./make_plots.sh
 ```
+The plots will be created in the respective folders with filename `clingraph.png`.
+
 ## Fact format
 ### Configuration model
 
