@@ -15,7 +15,7 @@ object((),bike)
 object((frontWheel,((),0)),wheel)
 object((rearWheel,((),0)),wheel)
 val(((),color),yellow)
-al(((),wheelSupport),no)
+val(((),wheelSupport),no)
 val(((frontWheel,((),0)),size),18)
 val(((rearWheel,((),0)),size),18)
 ```
@@ -23,6 +23,22 @@ val(((rearWheel,((),0)),size),18)
 For a bit more involved example you can the bike example (has about 600 stable models)
 ```
 clingo encoding.lp examples/bike/model.lp --opt-mode=enum 0
+```
+## Clingraph (under development)
+
+### Visualizing the configuratino model
+Visualize the configuration models with clingraph using the provided script
+```
+./make_plots.sh
+```
+The plots will be created in the respective folders with filename `clingraph.png`.
+
+### Visualizing instantiations
+Visualize the (partial) instantiations with the file `examples/viz_instantiation.lp`.
+You can pipe the stable models to clingraph for this, e.g.
+
+```
+clingo encoding.lp examples/bike/model.lp --outf=2 | clingraph --viz-encoding examples/viz_instantiation.lp  --out=render
 ```
 
 ## Fact format
