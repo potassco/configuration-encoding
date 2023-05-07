@@ -63,13 +63,20 @@ object(O) :- object(O,T).
 % Use indices in ascending order
 :- object((D,(P,I))), not object((D,(P,I-1))), I > 0.
 
+% Create associations for parts
+association(O1,O2,D,"part") :- object(O2), O2 = (D,(O1,_)).
+
+% Assign connection ports
+{ association(O1,O2,D,"connection") : object(O2,T) } :- object(O1,S), connection(S,T,D).
+connected(O1,O2,D) :- association(O1,O2,D,"connection").
+
 % Check part and connection cardinalities
 port(S,T,D,"partonomic") :- part(S,T,D).
-% port(S,T,D,"connection") :- connection(S,T,D).
+port(S,T,D,"connection") :- connection(S,T,D).
 
 % Port multiplicities need to be satisfied for each object
-count(O,D,X) :- object(O,S), part(S,T,D), X = #count { I : object((D,(O,I)),T) }.
-:- part(S,T,D), object(O,S), count(O,D,X), not multiplicity(S,T,D,X).
+count(O,D,X) :- object(O,S), port(S,T,D,_), X = #count { O' : association(O,O',D,_) }.
+:- port(S,T,D,_), object(O,S), count(O,D,X), not multiplicity(S,T,D,X).
 
 % Assign values to attribute variables
 { val((O,D),V) : dom(T,D,V) } :- object(O,T), attr(T,D,"atomic").
@@ -157,3 +164,4 @@ unsat(C) :- left_compare(C,Op,X1), right_compare(C,Op,X2), not sat_pair(C,X1,X2)
 
 #show object/2.
 #show val/2.
+#show connected/3.

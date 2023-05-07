@@ -59,7 +59,8 @@ multiplicity(mb,cpu,cpu,1).
 multiplicity(mb,cpu,cpu,2).
 
 %%% Connections
-connection(controller_port,disk_port,c2d,0,1).
+% connection(controller_port,disk_port,c2d,0,1).
+connection(disk_port,controller_port,connected,1,1).
 
 %%% Attributes
 attr(pc,usage).
