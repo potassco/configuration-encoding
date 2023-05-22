@@ -26,7 +26,7 @@ clingo encoding.lp examples/bike/model.lp --opt-mode=enum 0
 ```
 ## Clingraph (under development)
 
-### Visualizing the configuratino model
+### Visualizing the configuration model
 Visualize the configuration models with clingraph using the provided script
 ```
 ./make_plots.sh
