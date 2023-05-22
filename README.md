@@ -126,7 +126,7 @@ entry((T,I),(Col,Row),V).
 For comparision constraints a left and right path need to be specified.
 Constraint `(T,I)` compares attributes `P1` and `P2`
 which are both attribute path expressions.
-````
+```
 left((T,I),P1).
 right((T,I),P2).
 ```
