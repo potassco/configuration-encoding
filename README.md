@@ -49,19 +49,18 @@ There is a type named `T`.
 ```
 type(T).
 ```
-#### Partonomic ports
-There is a partonomic part from type `S`
+#### Partonomic and connection ports
+There is a partonomic/connection part from type `S`
 to type `T` with descriptor `D`.
 Its possible multiplicities are given by `N1`, `N2`,...
 ```
 part(S,T,D).
 multiplicity(S,T,D,N1)
 multiplicity(S,T,D,N2)
+
+connection(S,T,D).
 ...
 ```
-
-#### Connection ports
-TODO
 
 #### Attributes
 Type `T` has an attribute with descriptor `D`.
