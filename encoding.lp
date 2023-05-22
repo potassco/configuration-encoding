@@ -24,7 +24,7 @@ descriptor("attribute",D) :- attr(_,D,_).
 :- descriptor("port",D), descriptor("attribute",D).
 
 % Number of columns/paths and their for a constraint
-max_row_index(C,N) :- constraint(C,"table"), N = #max{ R: entry(C,(_,R),_)}.
+% max_row_index(C,N) :- constraint(C,"table"), N = #max{ R: entry(C,(_,R),_)}.
 max_column_index(C,N) :- constraint(C,"table"), N = #max{ Col : column(C,Col,_)}.
 
 % Constraints are defined uniquely
@@ -55,13 +55,13 @@ minmax(S,T,D,Min,Max) :- part(S,T,D),
                             Min = #min { N : multiplicity(S,T,D,N)},
                             Max = #max { N : multiplicity(S,T,D,N)}.
 
-object((D,(P,0..Min-1)),T) :- object(P,S), part(S,T,D), minmax(S,T,D,Min,_).
+object((D,(O,0..Min-1)),T) :- object(O,S), part(S,T,D), minmax(S,T,D,Min,_).
 
-{ object((D,(P,I)),T) : I = Min..Max-1 } :- object(P,S), part(S,T,D), minmax(S,T,D,Min,Max). %, Min < Max.
+{ object((D,(O,I)),T) : I = Min..Max-1 } :- object(O,S), part(S,T,D), minmax(S,T,D,Min,Max). %, Min < Max.
 object(O) :- object(O,T).
 
 % Use indices in ascending order
-:- object((D,(P,I))), not object((D,(P,I-1))), I > 0.
+:- object((D,(O,I))), not object((D,(O,I-1))), I > 0.
 
 % Create associations for parts
 association(O1,O2,D,"part") :- object(O2), O2 = (D,(O1,_)).
