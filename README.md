@@ -24,7 +24,7 @@ For a bit more involved example you can the bike example (has about 600 stable m
 ```
 clingo encoding.lp examples/bike/model.lp --opt-mode=enum 0
 ```
-## Clingraph (under development)
+## Clingraph
 
 ### Visualizing the configuration model
 Visualize the configuration models with clingraph using the provided script
@@ -93,11 +93,9 @@ path(T,D,P2).
 ```
 
 #### Path expressions
-TODO
-```
-((),bike)
-(((),bike),front_wheel)
-```
+Path expressions are encoded as nested tuple with the first descriptor being the innnermost,
+e.g., the path `(d1,d2,d3)` is encoded as `(d3,(d2,(d1,()))`.
+
 
 #### Constraints
 A constraint is identified by the type `T` it is attached to, an index `I` and the kind of constraint. Possible options are
@@ -132,3 +130,22 @@ which are both attribute path expressions.
 left((T,I),P1).
 right((T,I),P2).
 ```
+
+### Instantiation
+#### Objects
+There is an object with name `N` and type `T`.
+```
+object(N,T)
+```
+
+The name has a nested tuple structure with indices built up from the partonomic port descriptors of the object.
+The root is always named `()`.
+For example `object((frontWheel,((),0)),wheel)`
+describes the first `frontWheel` of the root type `wheel`.
+
+#### Valuations
+The value of an attribute variable `A` is `V`.
+```
+val(A,V)
+```
+Attribute variables are tuples `(O,D)` with the object `O` and the attribute descriptor `D`.
