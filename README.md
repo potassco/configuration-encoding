@@ -85,7 +85,7 @@ dom(T,D,V)
 ```
 
 For calculated attributes `D` of type `T`
-the input to the aggregate function are paths `P1`, `P2`,...
+the input to the aggregate function are path expressions `P1`, `P2`,... (see below)
 ```
 path(T,D,P1).
 path(T,D,P2).
@@ -94,7 +94,7 @@ path(T,D,P2).
 
 #### Path expressions
 Path expressions are encoded as nested tuple with the first descriptor being the innnermost,
-e.g., the path `(d1,d2,d3)` is encoded as `(d3,(d2,(d1,()))`.
+e.g., the path `(frontWheel,size)` is encoded as `(size,(frontWheel,())`.
 
 
 #### Constraints
