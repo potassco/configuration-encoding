@@ -47,8 +47,9 @@ max_column_index(C,N) :- constraint(C,"table"), N = #max{ Col : column(C,Col,_)}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 % There needs to be always a root object
-object(()).
-object((),T) :- object(()), root(T).
+% object(()).
+% object((),T) :- object(()), root(T).
+object((),T) :- root(T).
 
 % Object generation
 minmax(S,T,D,Min,Max) :- part(S,T,D),
@@ -112,17 +113,20 @@ val((O,D),V) :- object(O,T), attr(T,D,"max"), V = #max { V',X,P : path(T,D,P), v
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Table constraints
 
-% Generate cross product tuples for each object and corresponding constraint
-var_tuple((O,C),N,((),X)) :- object(O,T), max_column_index((T,C),N), selector(O,P,X), column((T,C),N,P).
-var_tuple((O,C),N,(VT,X)) :- object(O,T), var_tuple((O,C),N+1,VT), selector(O,P,X), column((T,C),N,P), N>=0.
+% Generate valid tuples from tables
+% C = (T,Idx) = (Type,Constraint Idx)
+row_tuple(C,N,Row,(V,())) :- max_column_index(C,N), entry(C,(N,Row),V).
+row_tuple(C,N,Row,(V,VT)) :- row_tuple(C,N+1,Row,VT), entry(C,(N,Row),V), N>=0.
+row_tuple(C,VT) :- row_tuple(C,0,_,VT).
 
-% For each tuple check that it satisfies some row
-% by unpacking the nested tuples and checking the columns from left to right
-sat_row((O,C),VT,(0,Row),VT') :- object(O,T), var_tuple((O,C),0,VT), VT = (VT',X), val(X,V), entry((T,C),(0,Row),V).
-sat_row((O,C),VT,(Col,Row),VT'') :- object(O,T), sat_row((O,C),VT,(Col-1,Row),VT'), VT' = (VT'',X), val(X,V), entry((T,C),(Col,Row),V).
+% Generate cross product tuples from actual attribute variables
+% C = Constraint Idx
+var_tuple((O,C),N,(V,())) :- object(O,T), max_column_index((T,C),N), selector(O,P,X), column((T,C),N,P), val(X,V).
+var_tuple((O,C),N,(V,VT)) :- object(O,T), var_tuple((O,C),N+1,VT), selector(O,P,X), column((T,C),N,P), val(X,V), N>=0.
+var_tuple(OC,VT) :- var_tuple(OC,0,VT).
 
-% A table constraint is not satisfied if some tuple does not satisfy all values in a row
-unsat(C) :- var_tuple(C,0,VT), not sat_row(C,VT,_,()).
+% A table constraint is not satisfied if some variable tuple is not contained in the constraint relation
+unsat((O,C)) :- var_tuple((O,C),VT), not row_tuple((_,C),VT).
 
 %%% Comparison constraints
 left_compare((O,C),Op,X) :- object(O,T), constraint((T,C),Op), left((T,C),P), selector(O,P,X).
