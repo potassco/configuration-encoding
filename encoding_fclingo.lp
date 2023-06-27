@@ -1,6 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Configuration model check
-%%%%%%%%%%%%%%%%%%%%%%%%%
 % Partonomy has to be acyclic and rooted
 partonomic_path(X,Y) :- part(X,Y,_).
 partonomic_path(X,Z) :- partonomic_path(X,Y), partonomic_path(Y,Z).
@@ -9,44 +6,7 @@ partonomic_path(X,Z) :- partonomic_path(X,Y), partonomic_path(Y,Z).
 root(T) :- type(T), not partonomic_path(_,T).
 :- {root(T)} > 1.
 
-% Unique outgoing port descriptors for a type (this should also hold for cardinalities?)
-% :- part(S,T1,D,_,_), part(S,T2,D,_,_), T1 < T2.
-
-% Make attr/3 format uniform
-attr(T,D,"atomic") :- attr(T,D).
-
-% For a given type an attribute can only be declared once
-:- attr(T,D,E), attr(T,D,E'), E < E'.
-
-% Set of port and attribute descriptors has to be disjoint
-descriptor("port",D) :- part(_,_,D).
-descriptor("attribute",D) :- attr(_,D,_).
-:- descriptor("port",D), descriptor("attribute",D).
-
-% Number of columns/paths and their for a constraint
-% max_row_index(C,N) :- constraint(C,"table"), N = #max{ R: entry(C,(_,R),_)}.
-max_column_index(C,N) :- constraint(C,"table"), N = #max{ Col : column(C,Col,_)}.
-
-% Constraints are defined uniquely
-
-% Table constraints are well-defined (indices of columns and rows start at 0 and increase by 1)
-
-%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% User requirements check
-%%%%%%%%%%%%%%%%%%%%%%%%%
-% TODO: How can users specify objects and how can the correctness be checked?
-% :- type(T), object(O), not objecttype(O,T).
-
-% Given attribute values have to lie inside range (TODO: Distinguish between user given)
-% :- val((O,D),V), attr(T,D), object(O,T), not dom(T,D,V).
-
-% Check that all objects have values assigned (totality)?
-
-%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Instantiation
-%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% There needs to be always a root object
+% Instantiate root object with correct type
 object((),T) :- root(T).
 
 % Object generation
@@ -81,7 +41,6 @@ count(O,D,X) :- object(O,S), port(S,T,D,_), X = #count { O' : association(O,O',D
 { val((O,D),V) : dom(T,D,V) } :- object(O,T), attr(T,D,"discrete").
 &fin{ Min..Max } =: (O,D) :- object(O,T), attr(T,D,"numeric"), dom(T,D,Min,Max).
 
-
 % Exactly one value has to be assigned for an attribute variable
 :- attr(T,D,"discrete"), object(O,T), not val((O,D),_).
 :- val(X,V1), val(X,V2), V1 < V2.
@@ -94,48 +53,47 @@ selector(O,(),O) :- object(O).
 selector(O,(D,P),(D,(O',I))):- selector(O,P,O'), object((D,(O',I))).
 
 % An attribute selector (O,P,X) selects
-%   all attribute variables X whie lie on
+%   all attribute variables X which lie on
 %   path P relative to object O
 selector(O,(D,P),(O',D)) :- selector(O,P,O'), object(O',T), attr(T,D,_).
 
 %%% Aggregates
 % Count
+% TODO: Implement for discrete attributes
 % val((O,D),V) :- object(O,T), attr(T,D,"count"), V = #count { O',P : path(T,D,P), selector(O,P,O') }.
 &fsum{ 1,O',P : path(T,D,P), selector(O,P,O') } =: (O,D) :- object(O,T), attr(T,D,"count").
-% val((O,D),2) :-object(O,T), attr(T,D,"count").
-
 % Sum
-% val((O,D),V) :- object(O,T), attr(T,D,"sum"), V = #sum { V',X,P : path(T,D,P), val(X,V'), selector(O,P,X) }.
-% &fsum{ V,X,P : path(T,D,P), val(X,V), selector(O,P,X) } =: (O,D) :- object(O,T), attr(T,D,"sum").
 &fsum{ X,P : path(T,D,P), selector(O,P,X) } =: (O,D) :- object(O,T), attr(T,D,"sum").
-
 % Min
-% val((O,D),V) :- object(O,T), attr(T,D,"min"), V = #min { V',X,P : path(T,D,P), val(X,V'), selector(O,P,X) }.
 &fmin{ X,P : path(T,D,P), selector(O,P,X) } =: (O,D) :- object(O,T), attr(T,D,"min").
-
 % Max
-% val((O,D),V) :- object(O,T), attr(T,D,"max"), V = #max { V',X,P : path(T,D,P), val(X,V'), selector(O,P,X) }.
 &fmax{ X,P : path(T,D,P), selector(O,P,X) } =: (O,D) :- object(O,T), attr(T,D,"max").
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Constraints
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Table constraints
+path_expansion((O,C),Col,(X,())) :- column((T,C),Col,P), object(O,T), selector(O,P,X), not column((T,C),Col+1,_).
+path_expansion((O,C),Col,(X,X')) :- path_expansion((O,C),Col+1,X'), column((T,C),Col,P), object(O,T), selector(O,P,X), Col>=0.
+path_expansion((O,C),GP)         :- path_expansion((O,C),0,GP).
 
-% Generate valid tuples from tables
-% C = (T,Idx) = (Type,Constraint Idx)
-row_tuple(C,N,Row,(V,())) :- max_column_index(C,N), entry(C,(N,Row),V).
-row_tuple(C,N,Row,(V,VT)) :- row_tuple(C,N+1,Row,VT), entry(C,(N,Row),V), N>=0.
-row_tuple(C,VT) :- row_tuple(C,0,_,VT).
+in_path((X,GP'),GP',X) :- path_expansion(_,(X,GP')).
+in_path(GP,GP',X)      :- in_path(GP,(X,GP'),_).
+in_path(GP,X)          :- in_path(GP,_,X).
 
-% Generate cross product tuples from actual attribute variables
-% C = Constraint Idx
-var_tuple((O,C),N,(V,())) :- object(O,T), max_column_index((T,C),N), selector(O,P,X), column((T,C),N,P), val(X,V).
-var_tuple((O,C),N,(V,VT)) :- object(O,T), var_tuple((O,C),N+1,VT), selector(O,P,X), column((T,C),N,P), val(X,V), N>=0.
-var_tuple(OC,VT) :- var_tuple(OC,0,VT).
+non_numeric(X) :- object(O,T), attr(T,D,"discrete"), X=(O,D).
 
-% A table constraint is not satisfied if some variable tuple is not contained in the constraint relation
-unsat((O,C)) :- var_tuple((O,C),VT), not row_tuple((_,C),VT).
+hit_cell((O,C),GP,(Col,Row)) :- entry((T,C),(Col,Row),V), column((T,C),Col,P),
+                                object(O,T), selector(O,P,X), val(X,V), non_numeric(X),
+                                path_expansion((O,C),GP), in_path(GP,X).
+hit_cell((O,C),GP,(Col,Row)) :- entry((T,C),(Col,Row),V), column((T,C),Col,P),
+                                object(O,T), selector(O,P,X), &fsum{X} = V, not non_numeric(X),
+                                path_expansion((O,C),GP), in_path(GP,X).
+hit_row((O,C),GP,Row) :- entry((T,C),(_,Row),_), 0 = #sum{ 1,Col: entry((T,C),(Col,Row),_); -1,Col': hit_cell((O,C),GP,(Col',Row)) },
+                         object(O,T), path_expansion((O,C),GP).
+
+:- constraint((T,C),"table"), object(O,T), path_expansion((O,C),GP), not hit_row((O,C),GP,_).
+
 
 %%% Comparison constraints
 left_compare((O,C),Op,X) :- object(O,T), constraint((T,C),Op), left((T,C),P), selector(O,P,X).
@@ -145,11 +103,11 @@ left_compare((O,C),Op,P) :- object(O,T), constraint((T,C),Op), left((T,C),P), P 
 right_compare((O,C),Op,P) :- object(O,T), constraint((T,C),Op), right((T,C),P), P = constant(N).
 
 % Auxiliary val atoms for comparison with constants
-val(P,N) :- left_compare(_,_,P), P=constant(N).
-val(P,N) :- right_compare(_,_,P), P=constant(N).
+% TODO: Is there are a simpler way to declare constants?
+&fsum{N} =: P :- left_compare(_,_,P), P=constant(N).
+&fsum{N} =: P :- right_compare(_,_,P), P=constant(N).
 
 % TODO: Implement this for discrete attributes as well
-% TODO: How to handle constants?
 
 &fsum{X1} = X2 :- left_compare(C,"eq",X1),  right_compare(C,"eq",X2).
 &fsum{X1} !=X2 :- left_compare(C,"neq",X1), right_compare(C,"neq",X2).
@@ -158,8 +116,6 @@ val(P,N) :- right_compare(_,_,P), P=constant(N).
 &fsum{X1} > X2 :- left_compare(C,"gt",X1),  right_compare(C,"gt",X2).
 &fsum{X1} >=X2 :- left_compare(C,"gte",X1), right_compare(C,"gte",X2).
 
-:- unsat(C).
-#show test/0.
 % Define statements
 #defined type/1.
 #defined part/3.
@@ -177,5 +133,5 @@ val(P,N) :- right_compare(_,_,P), P=constant(N).
 
 #show object/2.
 #show val/2.
-&show {(O,D) : object(O,T), attr(T,D,_)}.
+% &show {(O,D) : object(O,T), attr(T,D,_), not non_numeric((O,D))}.
 #show connected/3.
