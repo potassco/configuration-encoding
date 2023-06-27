@@ -6,43 +6,42 @@ partonomic_path(X,Z) :- partonomic_path(X,Y), partonomic_path(Y,Z).
 root(T) :- type(T), not partonomic_path(_,T).
 :- {root(T)} > 1.
 
-% Instantiate root object
+% Generate maximal object tree
 object((),T) :- root(T).
-
-% Object generation
-minmax(S,T,D,Min,Max) :- part(S,T,D),
-                            Min = #min { N : multiplicity(S,T,D,N)},
-                            Max = #max { N : multiplicity(S,T,D,N)}.
-
-object((D,(O,0..Min-1)),T) :- object(O,S), part(S,T,D), minmax(S,T,D,Min,_).
-
-{ object((D,(O,I)),T) : I = Min..Max-1 } :- object(O,S), part(S,T,D), minmax(S,T,D,Min,Max). %, Min < Max.
+object((D,(O,0..Max-1)),T) :- object(O,S), part(S,T,D), Max = #max { N : multiplicity(S,T,D,N)}.
 object(O) :- object(O,T).
 
-% Use indices in ascending order
-:- object((D,(O,I))), not object((D,(O,I-1))), I > 0.
+% Select subtree (root has to be selected)
+selected((),T) :- root(T).
+{ selected(O,T) : object(O,T) }.
+selected(O) :- selected(O,_).
 
-% Create associations for parts
-association(O1,O2,D,"part") :- object(O2), O2 = (D,(O1,_)).
+% Select such that indices are in ascending order
+:- selected((D,(O,I))), not selected((D,(O,I-1))), I > 0.
 
-% Assign connection ports
-{ association(O1,O2,D,"connection") : object(O2,T) } :- object(O1,S), connection(S,T,D).
-connected(O1,O2,D) :- association(O1,O2,D,"connection").
+% Select at least minimal number of required objects
+selected((D,(O,0..Min-1)),T) :- selected(O,S), part(S,T,D), Min = #min { N : multiplicity(S,T,D,N)}.
 
-% Check part and connection cardinalities
-port(S,T,D,"partonomic") :- part(S,T,D).
-port(S,T,D,"connection") :- connection(S,T,D).
+% Check part multiplicities
+:- part(S,T,D), not multiplicity(S,T,D,X), selected(O,S), X = #count { I : selected((D,(O,I)),T) }.
 
-% Port multiplicities need to be satisfied for each object
-count(O,D,X) :- object(O,S), port(S,T,D,_), X = #count { O' : association(O,O',D,_) }.
-:- port(S,T,D,_), object(O,S), count(O,D,X), not multiplicity(S,T,D,X).
+% Create all possible connection ports and select
+association(O1,O2,D,"connection") :- connection(S,T,D), object(O1,S), object(O2,T).
+{ connected(O1,O2,D) : association(O1,O2,D,"connection") }.
+:- connected(O1,O2), not selected(O1), not selected(O2).
 
+% Check connection multiplicities
+:- connection(S,T,D), not multiplicity(S,T,D,X),
+   selected(O1,S), X = #count { O2 : connected(O1,O2,D,_) }.
+
+
+%%% Attributes
 attr(T,D,"atomic") :- attr(T,D).
 % Assign values to attribute variables
-{ val((O,D),V) : dom(T,D,V) } :- object(O,T), attr(T,D,"atomic").
+{ val((O,D),V) : dom(T,D,V) } :- selected(O,T), attr(T,D,"atomic").
 
 % Exactly one value has to be assigned for an attribute variable
-:- attr(T,D,"atomic"), object(O,T), not val((O,D),_).
+:- attr(T,D,"atomic"), selected(O,T), not val((O,D),_).
 :- val(X,V1), val(X,V2), V1 < V2.
 
 %%% Selectors
@@ -59,7 +58,7 @@ selector(O,(D,P),(O',D)) :- selector(O,P,O'), object(O',T), attr(T,D,_).
 
 %%% Aggregates
 % Count
-val((O,D),V) :- object(O,T), attr(T,D,"count"), V = #count { O',P : path(T,D,P), selector(O,P,O') }.
+val((O,D),V) :- object(O,T), attr(T,D,"count"), V = #count { O',P : path(T,D,P), selector(O,P,O'), selected(O') }.
 % Sum
 val((O,D),V) :- object(O,T), attr(T,D,"sum"), V = #sum { V',X,P : path(T,D,P), val(X,V'), selector(O,P,X) }.
 % Min
@@ -80,19 +79,19 @@ row_tuple(C,RT) :- row_tuple(C,(0,_),RT).
 
 % Generate cross product tuples from actual attribute variables
 % C = Constraint Idx
-var_tuple((O,C),Col,(V,())) :- object(O,T), selector(O,P,X), column((T,C),Col,P), val(X,V), not column((T,C),Col+1,_).
-var_tuple((O,C),Col,(V,VT)) :- object(O,T), var_tuple((O,C),Col+1,VT), selector(O,P,X), column((T,C),Col,P), val(X,V), Col>=0.
+var_tuple((O,C),Col,(V,())) :- column((T,C),Col,P), object(O,T), selector(O,P,X), not column((T,C),Col+1,_), val(X,V).
+var_tuple((O,C),Col,(V,VT)) :- column((T,C),Col,P), object(O,T), selector(O,P,X), var_tuple((O,C),Col+1,VT), val(X,V), Col>=0.
 var_tuple(OC,VT) :- var_tuple(OC,0,VT).
 
 % A table constraint is not satisfied if some variable tuple is not contained in the constraint relation
 unsat((O,C)) :- var_tuple((O,C),VT), not row_tuple((_,C),VT).
 
 %%% Comparison constraints
-left_compare((O,C),Op,X) :- object(O,T), constraint((T,C),Op), left((T,C),P), selector(O,P,X).
-right_compare((O,C),Op,X) :- object(O,T), constraint((T,C),Op), right((T,C),P), selector(O,P,X).
+left_compare((O,C),Op,X)  :- constraint((T,C),Op), left((T,C),P), object(O,T), selector(O,P,X).
+right_compare((O,C),Op,X) :- constraint((T,C),Op), right((T,C),P),object(O,T), selector(O,P,X).
 
-left_compare((O,C),Op,P) :- object(O,T), constraint((T,C),Op), left((T,C),P), P = constant(N).
-right_compare((O,C),Op,P) :- object(O,T), constraint((T,C),Op), right((T,C),P), P = constant(N).
+left_compare((O,C),Op,P)  :- constraint((T,C),Op), left((T,C),P), object(O,T), P = constant(N).
+right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),object(O,T), P = constant(N).
 
 % Auxiliary val atoms for comparison with constants
 val(P,N) :- left_compare(_,_,P), P=constant(N).
@@ -125,6 +124,6 @@ unsat(C) :- left_compare(C,Op,X1), right_compare(C,Op,X2), not sat_pair(C,X1,X2)
 #defined left/2.
 #defined right/2.
 
-#show object/2.
+#show selected/2.
 #show val/2.
 #show connected/3.
