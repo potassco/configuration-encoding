@@ -9,11 +9,7 @@ from clingo.control import Control
 class Solver():
 
     def __init__(self, options=()):
-        # print(options)
-        self.ctl = Control(list(options))  #["5", "--opt-mode=enum"])
-
-        # self.ctl.configuration.solve.opt_mode = 'enum'
-        # self.ctl.configuration.solve.models = 0
+        self.ctl = Control(list(options))
 
     def solve(self, files):
         for f in files:
