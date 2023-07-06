@@ -7,13 +7,29 @@ import unittest
 
 class TestMain(unittest.TestCase):
 
-    def test_object(self):
+    def test_object_part(self):
         self.assertEqual(solve('type(a).'), [['selected((),a)']])
         self.assertEqual(solve('type(a). type(b).'), [])
 
         self.assertEqual(
             solve('type(a). type(b). part(a,b,b). multiplicity(a,b,b,1).'),
             [['selected((),a)', 'selected((b,((),0)),b)']])
+
+        self.assertEqual(
+            solve('type(a). type(b). part(a,b,b). multiplicity(a,b,b,0).'),
+            [['selected((),a)']])
+
+        self.assertEqual(
+            solve(
+                'type(a). type(b). part(a,b,b). multiplicity(a,b,b,1). part(b,a,a). multiplicity(b,a,a,1).'
+            ), [])
+
+        self.assertEqual(
+            solve(
+                'type(a). type(b). part(a,b,b). multiplicity(a,b,b,0). multiplicity(a,b,b,1).'
+            ),
+            [['selected((),a)'], ['selected((),a)', 'selected((b,((),0)),b)']])
+
         self.assertEqual(
             solve(
                 'type(a). type(b). part(a,b,b). multiplicity(a,b,b,1). multiplicity(a,b,b,2).'
@@ -22,6 +38,15 @@ class TestMain(unittest.TestCase):
                     'selected((),a)', 'selected((b,((),0)),b)',
                     'selected((b,((),1)),b)'
                 ]])
+
+        self.assertEqual(
+            solve(
+                'type(a). type(b). type(c). part(a,b,b). multiplicity(a,b,b,2). part(b,c,c). multiplicity(b,c,c,1).'
+            ), [[
+                'selected((),a)', 'selected((b,((),0)),b)',
+                'selected((b,((),1)),b)', 'selected((c,((b,((),0)),0)),c)',
+                'selected((c,((b,((),1)),0)),c)'
+            ]])
 
     def test_connection(self):
         self.assertEqual(len(solve('connection.lp', ['-c', 'num_hdd=1'])), 3)
@@ -32,7 +57,7 @@ class TestMain(unittest.TestCase):
 
         self.assertEqual(len(solve('connection.lp', ['-c', 'num_hdd=4'])), 34)
 
-    def test_table_constraint(self):
+    def test_constraint(self):
         self.assertEqual(
             solve('tb_basic.lp'),
             [['selected((),a)', 'val(((),b),"b1")', 'val(((),c),"c1")'],
