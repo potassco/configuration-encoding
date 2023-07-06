@@ -16,6 +16,9 @@ selected((),T) :- root(T).
 { selected(O,T) : object(O,T) }.
 selected(O) :- selected(O,_).
 
+% You can only select an object if its "parent object" is selected as well
+:- selected(O1), O1 = (_,(O2,_)), not selected(O2).
+
 % Select such that indices are in ascending order
 :- selected((D,(O,I))), not selected((D,(O,I-1))), I > 0.
 
@@ -28,11 +31,13 @@ selected((D,(O,0..Min-1)),T) :- selected(O,S), part(S,T,D), Min = #min { N : mul
 % Create all possible connection ports and select
 association(O1,O2,D,"connection") :- connection(S,T,D), object(O1,S), object(O2,T).
 { connected(O1,O2,D) : association(O1,O2,D,"connection") }.
-:- connected(O1,O2), not selected(O1), not selected(O2).
+
+:- connected(O1,O2,_), not selected(O1).
+:- connected(O1,O2,_), not selected(O2).
 
 % Check connection multiplicities
 :- connection(S,T,D), not multiplicity(S,T,D,X),
-   selected(O1,S), X = #count { O2 : connected(O1,O2,D,_) }.
+   selected(O1,S), X = #count { O2 : connected(O1,O2,D) }.
 
 
 %%% Attributes
@@ -114,6 +119,8 @@ unsat(C) :- left_compare(C,Op,X1), right_compare(C,Op,X2), not sat_pair(C,X1,X2)
 #defined part/3.
 #defined multiplicity/4.
 #defined connection/3.
+#defined connected/2.
+#defined connected/3.
 #defined attr/2.
 #defined attr/3.
 #defined dom/3.
