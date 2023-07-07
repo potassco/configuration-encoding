@@ -24,28 +24,28 @@ multiplicity(wheel,bag,bag,0).
 multiplicity(wheel,bag,bag,2).
 
 %%% Attributes
-attr(bike,totalWeight,"sum").
-attr(bike,stowage,"sum").
+% attr(bike,totalWeight,"sum").
+% attr(bike,stowage,"sum").
 
-attr(bike,maxWeight,"discrete").
-dom(bike,maxWeight,5000).
+attr(bike,maxWeight,"numeric").
+dom(bike,maxWeight,5000,5000).
 
-attr(bike,minStowage,"discrete").
-dom(bike,minStowage,30).
+attr(bike,minStowage,"numeric").
+dom(bike,minStowage,30,30).
 
-attr(wheel,size,"discrete").
-dom(wheel,size,(22;24;27;29)).
+attr(wheel,size,"numeric").
+dom(wheel,size,22,29).
 
-attr(wheel,weight,"discrete").
-dom(wheel,weight,(1800;1900;2100;2200)).
+attr(wheel,weight,"numeric").
+dom(wheel,weight,0,2300).
 
-attr(bag,volume,"discrete").
-dom(bag,volume,(10;20;50;100)).
+attr(bag,volume,"numeric").
+dom(bag,volume,0,100).
 
-attr(bag,weight,"discrete").
-dom(bag,weight,(100;250;600;1200)).
+attr(bag,weight,"numeric").
+dom(bag,weight,0,1200).
 
-% Aggregate paths
+%%% Aggregate paths
 path(bike,totalWeight,(weight,(frontWheel,()))).
 path(bike,totalWeight,(weight,(rearWheel,()))).
 path(bike,totalWeight,(weight,(bag,(frontWheel,())))).
@@ -64,10 +64,12 @@ constraint((bike,0),"eq").
 constraint((bike,1),"lte").
     left((bike,1),  (totalWeight,())).
     right((bike,1), (maxWeight,())).
+% %     right((bike,1), constant(5000)).
 
 constraint((bike,2),"gte").
     left((bike,2),  (stowage,())).
     right((bike,2), (minStowage,())).
+    % % right((bike,2), constant(30)).
 
 constraint((wheel,0),"table").
     column((wheel,0),0,(size,())).    column((wheel,0),1,(weight,())).

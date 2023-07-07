@@ -63,51 +63,73 @@ connection(disk_port,controller_port,connected).
 multiplicity(disk_port,controller_port,connected,1).
 
 %%% Attributes
-attr(pc,usage).
-attr(pc,efficiency).
+attr(pc,usage,"discrete").
+dom(pc,usage,("internet";"scientific","multimedia")).
+
+attr(pc,efficiency,"discrete").
+dom(pc,efficiency,("A","B","C")).
+
 attr(pc,price,"sum"). % constraint prc1
 attr(pc,total_capacity,"sum"). % for constraint resc2
 attr(pc,capacity_used,"sum"). % for constraint resc2
-attr(internet_conn,price).
-attr(hd_unit,price,"sum"). % constraint prc2
-attr(hd_disk,type).
-attr(hd_disk,capacity).
-attr(hd_disk,price).
-attr(hd_controller,type).
-attr(hd_controller,price).
-attr(mb,efficiency).
-attr(mb,price).
-attr(mb,type).
-attr(cpu,clockrate).
-attr(cpu,price).
-attr(cpu,type).
-attr(screen,efficiency).
-attr(screen,price).
-attr(os,hd_capacity).
-attr(os,price).
-attr(app,hd_capacity).
-attr(app,price).
 
-dom(pc,usage,("internet";"scientific","multimedia")).
-dom(pc,efficiency,("A","B","C")).
+attr(internet_conn,price,"discrete").
 dom(internet_conn,price,50).
+
+attr(hd_unit,price,"sum"). % constraint prc2
+
+attr(hd_disk,type,"discrete").
 dom(hd_disk,type,("MedStoreDisk";"MaxStoreDisk")).
+
+attr(hd_disk,capacity,"discrete").
 dom(hd_disk,capacity,(200;1000)).
+
+attr(hd_disk,price,"discrete").
 dom(hd_disk,price,(200;500)).
+
+attr(hd_controller,type,"discrete").
 dom(hd_controller,type,("MedStoreC";"MaxStoreC")).
+
+attr(hd_controller,price,"discrete").
 dom(hd_controller,price,500).
+
+attr(mb,type,"discrete").
 dom(mb,type,("MBSilver";"MBDiamond")).
+
+attr(mb,efficiency,"discrete").
 dom(mb,efficiency,("A";"B")).
+
+attr(mb,price,"discrete").
 dom(mb,price,(250;350)).
+
+attr(cpu,type,"discrete").
 dom(cpu,type,("CPUD";"CPUS")).
+
+attr(cpu,clockrate,"discrete").
 dom(cpu,clockrate,("medium","fast")).
+
+attr(cpu,price,"discrete").
 dom(cpu,price,(100,150)).
+
+attr(screen,efficiency,"discrete").
 dom(screen,efficiency,("A";"B";"C")).
+
+attr(screen,price,"discrete").
 dom(screen,price,(100;150;200)).
+
+attr(os,type,"discrete").
 dom(os,type,("OSBeta";"OSAlpha")).
+
+attr(os,hd_capacity,"discrete").
 dom(os,hd_capacity,(6;13)).
+
+attr(os,price,"discrete").
 dom(os,price,(100;500)).
+
+attr(app,hd_capacity,"discrete").
 dom(app,hd_capacity,200).
+
+attr(app,price,"discrete").
 dom(app,price,50).
 
 %%% Aggregate paths
