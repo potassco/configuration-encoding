@@ -35,6 +35,8 @@ association(O1,O2,D,"connection") :- connection(S,T,D), object(O1,S), object(O2,
 :- connected(O1,O2,_), not selected(O1).
 :- connected(O1,O2,_), not selected(O2).
 
+% :- connected(O,O,_). % Should this be allowed or not?
+
 % Check connection multiplicities
 :- connection(S,T,D), not multiplicity(S,T,D,X),
    selected(O1,S), X = #count { O2 : connected(O1,O2,D) }.

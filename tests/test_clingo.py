@@ -57,6 +57,60 @@ class TestMain(unittest.TestCase):
 
         self.assertEqual(len(solve('connection.lp', ['-c', 'num_hdd=4'])), 34)
 
+    def test_attribute(self):
+        self.assertEqual(solve('type(a). attr(a,b). dom(a,b,(1;2;3)).'),
+                         [['selected((),a)', 'val(((),b),1)'],
+                          ['selected((),a)', 'val(((),b),2)'],
+                          ['selected((),a)', 'val(((),b),3)']])
+        self.assertEqual(
+            solve('simple_sum.lp'),
+            [[
+                'selected((),a)', 'selected((b,((),0)),b)',
+                'selected((b,((),1)),b)', 'val(((b,((),0)),c),1)',
+                'val(((b,((),1)),c),1)', 'val(((),s),2)'
+            ],
+             [
+                 'selected((),a)', 'selected((b,((),0)),b)',
+                 'selected((b,((),1)),b)', 'val(((b,((),0)),c),1)',
+                 'val(((b,((),1)),c),2)', 'val(((),s),3)'
+             ],
+             [
+                 'selected((),a)', 'selected((b,((),0)),b)',
+                 'selected((b,((),1)),b)', 'val(((b,((),0)),c),2)',
+                 'val(((b,((),1)),c),2)', 'val(((),s),4)'
+             ],
+             [
+                 'selected((),a)', 'selected((b,((),0)),b)',
+                 'selected((b,((),1)),b)', 'val(((b,((),1)),c),1)',
+                 'val(((b,((),0)),c),2)', 'val(((),s),3)'
+             ]])
+
+        self.assertEqual(solve('simple_count.lp'), [[
+            'selected((),a)', 'selected((b,((),0)),b)',
+            'selected((b,((),1)),b)', 'val(((),c),2)'
+        ], ['selected((),a)', 'selected((b,((),0)),b)', 'val(((),c),1)'
+            ], ['selected((),a)', 'val(((),c),0)']])
+
+        self.assertEqual(solve('simple_min.lp'), [[
+            'selected((),a)', 'val(((),b),1)', 'val(((),c),2)', 'val(((),m),1)'
+        ], [
+            'selected((),a)', 'val(((),b),1)', 'val(((),c),4)', 'val(((),m),1)'
+        ], [
+            'selected((),a)', 'val(((),b),3)', 'val(((),c),2)', 'val(((),m),2)'
+        ], [
+            'selected((),a)', 'val(((),b),3)', 'val(((),c),4)', 'val(((),m),3)'
+        ]])
+
+        self.assertEqual(solve('simple_max.lp'), [[
+            'selected((),a)', 'val(((),b),1)', 'val(((),c),2)', 'val(((),m),2)'
+        ], [
+            'selected((),a)', 'val(((),b),1)', 'val(((),c),4)', 'val(((),m),4)'
+        ], [
+            'selected((),a)', 'val(((),b),3)', 'val(((),c),2)', 'val(((),m),3)'
+        ], [
+            'selected((),a)', 'val(((),b),3)', 'val(((),c),4)', 'val(((),m),4)'
+        ]])
+
     def test_constraint(self):
         self.assertEqual(
             solve('tb_basic.lp'),
