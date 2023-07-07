@@ -58,10 +58,11 @@ class TestMain(unittest.TestCase):
         self.assertEqual(len(solve('connection.lp', ['-c', 'num_hdd=4'])), 34)
 
     def test_attribute(self):
-        self.assertEqual(solve('type(a). attr(a,b). dom(a,b,(1;2;3)).'),
-                         [['selected((),a)', 'val(((),b),1)'],
-                          ['selected((),a)', 'val(((),b),2)'],
-                          ['selected((),a)', 'val(((),b),3)']])
+        self.assertEqual(
+            solve('type(a). attr(a,b,"discrete"). dom(a,b,(1;2;3)).'),
+            [['selected((),a)', 'val(((),b),1)'],
+             ['selected((),a)', 'val(((),b),2)'],
+             ['selected((),a)', 'val(((),b),3)']])
         self.assertEqual(
             solve('simple_sum.lp'),
             [[
@@ -110,6 +111,14 @@ class TestMain(unittest.TestCase):
         ], [
             'selected((),a)', 'val(((),b),3)', 'val(((),c),4)', 'val(((),m),4)'
         ]])
+
+        self.assertEqual(
+            solve('count_at_optional.lp'),
+            [['selected((),a)'],
+             [
+                 'selected((),a)', 'selected((b,((),0)),b)',
+                 'selected((c,((b,((),0)),0)),c)', 'val(((b,((),0)),cou),1)'
+             ]])
 
     def test_constraint(self):
         self.assertEqual(

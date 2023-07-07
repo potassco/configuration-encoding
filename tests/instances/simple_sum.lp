@@ -1,7 +1,7 @@
 type(a). type(b).
 part(a,b,b).
 multiplicity(a,b,b,2).
-attr(b,c).
+attr(b,c,"discrete").
 dom(b,c,(1;2)).
 
 attr(a,s,"sum").

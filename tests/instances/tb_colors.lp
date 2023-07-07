@@ -2,9 +2,9 @@ type(bike). type(bag).
 part(bike,bag,bags).
 multiplicity(bike,bag,bags,2).
 
-attr(bike,color).
+attr(bike,color,"discrete").
 dom(bike,color,("red";"yellow";"green")).
-attr(bag,color).
+attr(bag,color,"discrete").
 dom(bag,color,("red";"yellow";"green")).
 
 % constraint((bike,0)).

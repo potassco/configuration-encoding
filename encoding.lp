@@ -41,14 +41,10 @@ association(O1,O2,D,"connection") :- connection(S,T,D), object(O1,S), object(O2,
 :- connection(S,T,D), not multiplicity(S,T,D,X),
    selected(O1,S), X = #count { O2 : connected(O1,O2,D) }.
 
-
-%%% Attributes
-attr(T,D,"atomic") :- attr(T,D).
 % Assign values to attribute variables
-{ val((O,D),V) : dom(T,D,V) } :- selected(O,T), attr(T,D,"atomic").
-
+{ val((O,D),V) : dom(T,D,V) } :- selected(O,T), attr(T,D,"discrete").
 % Exactly one value has to be assigned for an attribute variable
-:- attr(T,D,"atomic"), selected(O,T), not val((O,D),_).
+:- attr(T,D,"discrete"), selected(O,T), not val((O,D),_).
 :- val(X,V1), val(X,V2), V1 < V2.
 
 %%% Selectors
@@ -65,13 +61,13 @@ selector(O,(D,P),(O',D)) :- selector(O,P,O'), object(O',T), attr(T,D,_).
 
 %%% Aggregates
 % Count
-val((O,D),V) :- object(O,T), attr(T,D,"count"), V = #count { O',P : path(T,D,P), selector(O,P,O'), selected(O') }.
+val((O,D),V) :- selected(O,T), attr(T,D,"count"), V = #count { O',P : path(T,D,P), selector(O,P,O'), selected(O') }.
 % Sum
-val((O,D),V) :- object(O,T), attr(T,D,"sum"), V = #sum { V',X,P : path(T,D,P), val(X,V'), selector(O,P,X) }.
+val((O,D),V) :- selected(O,T), attr(T,D,"sum"), V = #sum { V',X,P : path(T,D,P), val(X,V'), selector(O,P,X) }.
 % Min
-val((O,D),V) :- object(O,T), attr(T,D,"min"), V = #min { V',X,P : path(T,D,P), val(X,V'), selector(O,P,X) }.
+val((O,D),V) :- selected(O,T), attr(T,D,"min"), V = #min { V',X,P : path(T,D,P), val(X,V'), selector(O,P,X) }.
 % Max
-val((O,D),V) :- object(O,T), attr(T,D,"max"), V = #max { V',X,P : path(T,D,P), val(X,V'), selector(O,P,X) }.
+val((O,D),V) :- selected(O,T), attr(T,D,"max"), V = #max { V',X,P : path(T,D,P), val(X,V'), selector(O,P,X) }.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Constraints

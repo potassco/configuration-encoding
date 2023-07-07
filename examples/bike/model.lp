@@ -26,18 +26,23 @@ multiplicity(wheel,bag,bag,2).
 %%% Attributes
 attr(bike,totalWeight,"sum").
 attr(bike,stowage,"sum").
-attr(bike,maxWeight).
-attr(bike,minStowage).
-attr(wheel,size).
-attr(wheel,weight).
-attr(bag,volume).
-attr(bag,weight).
 
+attr(bike,maxWeight,"discrete").
 dom(bike,maxWeight,5000).
+
+attr(bike,minStowage,"discrete").
 dom(bike,minStowage,30).
+
+attr(wheel,size,"discrete").
 dom(wheel,size,(22;24;27;29)).
+
+attr(wheel,weight,"discrete").
 dom(wheel,weight,(1800;1900;2100;2200)).
+
+attr(bag,volume,"discrete").
 dom(bag,volume,(10;20;50;100)).
+
+attr(bag,weight,"discrete").
 dom(bag,weight,(100;250;600;1200)).
 
 % Aggregate paths

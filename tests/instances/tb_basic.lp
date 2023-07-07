@@ -1,7 +1,7 @@
 type(a).
-attr(a,b).
+attr(a,b,"discrete").
 dom(a,b,("b1";"b2")).
-attr(a,c).
+attr(a,c,"discrete").
 dom(a,c,("c1";"c2")).
 
 constraint((a,0)).

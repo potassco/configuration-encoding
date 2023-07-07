@@ -31,16 +31,20 @@ multiplicity(carrier,bag,bags,3).
 %%% Attributes
 attr(travelBike,totalWeight,"sum").
 attr(travelBike,totalBags,"count").
-attr(wheel,size).
-attr(wheel,weight).
-attr(bag,volume).
-attr(bag,weight).
-attr(bag,material).
 
+attr(wheel,size,"discrete").
 dom(wheel,size,(22;24;27;29)).
+
+attr(wheel,weight,"discrete").
 dom(wheel,weight,(1800;1900;2100;2200)).
+
+attr(bag,volume,"discrete").
 dom(bag,volume,(10;20;50;100)).
+
+attr(bag,weight,"discrete").
 dom(bag,weight,(100;250;600;1200)).
+
+attr(bag,material,"discrete").
 dom(bag,material,("Cotton";"Leather";"Polyester")).
 
 % Aggregate paths
