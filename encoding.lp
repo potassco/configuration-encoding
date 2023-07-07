@@ -74,27 +74,31 @@ val((O,D),V) :- selected(O,T), attr(T,D,"max"), V = #max { V',X,P : path(T,D,P),
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Table constraints
 
-% Generate valid tuples from tables
-% C = (T,Idx) = (Type,Constraint Idx)
-row_tuple(C,(Col,Row),(V,())) :- column(C,Col,_), entry(C,(Col,Row),V), not column(C,Col+1,_).
-row_tuple(C,(Col,Row),(V,RT)) :- row_tuple(C,(Col+1,Row),RT), entry(C,(Col,Row),V), Col>=0.
-row_tuple(C,RT) :- row_tuple(C,(0,_),RT).
+%%% Table constraints
+path_expansion((O,C),Col,(X,())) :- column((T,C),Col,P), selector(O,P,X), X=(O',_), not column((T,C),Col+1,_),
+                                    selected(O,T), selected(O').
+path_expansion((O,C),Col,(X',X)) :- path_expansion((O,C),Col+1,X), column((T,C),Col,P), Col>=0, selector(O,P,X'), X'= (O',_),
+                                    selected(O,T), selected(O').
+path_expansion((O,C),GP)         :- path_expansion((O,C),0,GP).
 
-% Generate cross product tuples from actual attribute variables
-% C = Constraint Idx
-var_tuple((O,C),Col,(V,())) :- column((T,C),Col,P), object(O,T), selector(O,P,X), not column((T,C),Col+1,_), val(X,V).
-var_tuple((O,C),Col,(V,VT)) :- column((T,C),Col,P), object(O,T), selector(O,P,X), var_tuple((O,C),Col+1,VT), val(X,V), Col>=0.
-var_tuple(OC,VT) :- var_tuple(OC,0,VT).
+in_path((X,GP'),GP',X) :- path_expansion(_,(X,GP')).
+in_path(GP,GP',X)      :- in_path(GP,(X,GP'),_).
+in_path(GP,X)          :- in_path(GP,_,X).
 
-% A table constraint is not satisfied if some variable tuple is not contained in the constraint relation
-unsat((O,C)) :- var_tuple((O,C),VT), not row_tuple((_,C),VT).
+hit_cell((O,C),GP,(Col,Row)) :- entry((T,C),(Col,Row),V), column((T,C),Col,P), selector(O,P,X), X = (O',_),
+                                selected(O,T), selected(O'), val(X,V),
+                                path_expansion((O,C),GP), in_path(GP,X).
+hit_row((O,C),GP,Row) :- entry((T,C),(_,Row),_), 0 = #sum{ 1,Col: entry((T,C),(Col,Row),_); -1,Col': hit_cell((O,C),GP,(Col',Row)) },
+                         selected(O,T), path_expansion((O,C),GP).
+
+:- constraint((T,C),"table"), selected(O,T), path_expansion((O,C),GP), not hit_row((O,C),GP,_).
 
 %%% Comparison constraints
-left_compare((O,C),Op,X)  :- constraint((T,C),Op), left((T,C),P), object(O,T), selector(O,P,X).
-right_compare((O,C),Op,X) :- constraint((T,C),Op), right((T,C),P),object(O,T), selector(O,P,X).
+left_compare((O,C),Op,(O',D))  :- constraint((T,C),Op), left((T,C),P), selector(O,P,(O',D)), selected(O,T), selected(O').
+right_compare((O,C),Op,(O',D)) :- constraint((T,C),Op), right((T,C),P),selector(O,P,(O',D)), selected(O,T), selected(O').
 
-left_compare((O,C),Op,P)  :- constraint((T,C),Op), left((T,C),P), object(O,T), P = constant(N).
-right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),object(O,T), P = constant(N).
+left_compare((O,C),Op,P)  :- constraint((T,C),Op), left((T,C),P), selected(O,T), P = constant(N).
+right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),selected(O,T), P = constant(N).
 
 % Auxiliary val atoms for comparison with constants
 val(P,N) :- left_compare(_,_,P), P=constant(N).
@@ -108,9 +112,7 @@ sat_pair(C,X1,X2) :- left_compare(C,"gt",X1), right_compare(C,"gt",X2), val(X1,V
 sat_pair(C,X1,X2) :- left_compare(C,"gte",X1), right_compare(C,"gte",X2), val(X1,V1), val(X2,V2), V1 >= V2.
 
 % A comparison constraint is not satisfied if some pair of attribute variables does not satisfy it
-unsat(C) :- left_compare(C,Op,X1), right_compare(C,Op,X2), not sat_pair(C,X1,X2), Op != "table".
-
-:- unsat(C).
+:- left_compare(C,Op,X1), right_compare(C,Op,X2), not sat_pair(C,X1,X2).
 
 % Define statements
 #defined type/1.

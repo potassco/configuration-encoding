@@ -14,7 +14,7 @@ dom(bag,color,("red";"yellow";"green")).
 % entry((bike,0),(0,2),"green").   entry((bike,0),(1,2),"green").
 % entry((bike,0),(0,3),"green").   entry((bike,0),(1,3),"yellow").
 
-constraint((bike,0)).
+constraint((bike,0),"table").
 column((bike,0),0,(color,())). column((bike,0),1,(color,(bags,()))).
 entry((bike,0),(0,0),"red").     entry((bike,0),(1,0),("red";"yellow")).
 entry((bike,0),(0,1),"green").   entry((bike,0),(1,1),("green";"yellow")).

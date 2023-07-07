@@ -126,3 +126,8 @@ class TestMain(unittest.TestCase):
             [['selected((),a)', 'val(((),b),"b1")', 'val(((),c),"c1")'],
              ['selected((),a)', 'val(((),b),"b2")', 'val(((),c),"c2")']])
         self.assertEqual(len(solve('tb_colors.lp')), 8)
+
+        self.assertEqual(len(solve('tb_with_optional.lp')), 4)
+        self.assertEqual(len(solve('tb_with_optional_reverse.lp')), 4)
+
+        self.assertEqual(len(solve('comparison_of_optional.lp')), 3)
