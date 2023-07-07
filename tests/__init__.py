@@ -6,7 +6,7 @@ from clingo.control import Control
 # from clingo.ast import ProgramBuilder, parse_string
 
 
-class Solver():
+class SolverClingo():
 
     def __init__(self, options=()):
         self.ctl = Control(['--opt-mode=enum', '0'] + list(options))
@@ -14,7 +14,7 @@ class Solver():
     def solve(self, f):
         self.ctl.load('encoding.lp')
         if f.endswith('.lp'):
-            self.ctl.load(f'tests/instances/{f}')
+            self.ctl.load(f'tests/instances/clingo/{f}')
         else:
             self.ctl.add(f)
 
@@ -28,6 +28,11 @@ class Solver():
 
 
 def solve(f, options=()):
-    solver = Solver(options)
+    solver = SolverClingo(options)
     ret = solver.solve(f)
     return ret
+
+
+def fsolve(f, options=()):
+    # TODO
+    pass
