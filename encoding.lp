@@ -73,11 +73,9 @@ val((O,D),V) :- selected(O,T), attr(T,D,"max"), V = #max { V',X,P : path(T,D,P),
 %%% Constraints
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Table constraints
-
-%%% Table constraints
 path_expansion((O,C),Col,(X,())) :- column((T,C),Col,P), selector(O,P,X), X=(O',_), not column((T,C),Col+1,_),
                                     selected(O,T), selected(O').
-path_expansion((O,C),Col,(X',X)) :- path_expansion((O,C),Col+1,X), column((T,C),Col,P), Col>=0, selector(O,P,X'), X'= (O',_),
+path_expansion((O,C),Col,(X',X)) :- path_expansion((O,C),Col+1,X), column((T,C),Col,P), Col>=0, selector(O,P,X'), X' = (O',_),
                                     selected(O,T), selected(O').
 path_expansion((O,C),GP)         :- path_expansion((O,C),0,GP).
 
@@ -97,8 +95,8 @@ hit_row((O,C),GP,Row) :- entry((T,C),(_,Row),_), 0 = #sum{ 1,Col: entry((T,C),(C
 left_compare((O,C),Op,(O',D))  :- constraint((T,C),Op), left((T,C),P), selector(O,P,(O',D)), selected(O,T), selected(O').
 right_compare((O,C),Op,(O',D)) :- constraint((T,C),Op), right((T,C),P),selector(O,P,(O',D)), selected(O,T), selected(O').
 
-left_compare((O,C),Op,P)  :- constraint((T,C),Op), left((T,C),P), selected(O,T), P = constant(N).
-right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),selected(O,T), P = constant(N).
+left_compare((O,C),Op,P)  :- constraint((T,C),Op), left((T,C),P), P = constant(N), selected(O,T).
+right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),P = constant(N), selected(O,T).
 
 % Auxiliary val atoms for comparison with constants
 val(P,N) :- left_compare(_,_,P), P=constant(N).

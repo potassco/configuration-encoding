@@ -63,7 +63,7 @@ connection(disk_port,controller_port,connected).
 multiplicity(disk_port,controller_port,connected,1).
 
 %%% Attributes
-attr(pc,usage,,"discrete").
+attr(pc,usage,"discrete").
 dom(pc,usage,("internet";"scientific","multimedia")).
 
 attr(pc,efficiency,"discrete").

@@ -11,12 +11,13 @@ multiplicity(bike,wheel,rearWheel,1).
 
 %%% Attributes
 attr(bike,color,"discrete").
-attr(bike,wheelSupport,"discrete").
-attr(wheel,size,"numeric").
-
 dom(bike,color,(red;green;yellow;blue)).
+
+attr(bike,wheelSupport,"discrete").
 dom(bike,wheelSupport,(yes;no)).
-dom(wheel,size,14,20).
+
+attr(wheel,size,"numeric").
+dom(wheel,size,0,20).
 
 %%% Constraints
 constraint((bike,0),"eq").
