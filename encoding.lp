@@ -112,6 +112,13 @@ sat_pair(C,X1,X2) :- left_compare(C,"gte",X1), right_compare(C,"gte",X2), val(X1
 % A comparison constraint is not satisfied if some pair of attribute variables does not satisfy it
 :- left_compare(C,Op,X1), right_compare(C,Op,X2), not sat_pair(C,X1,X2).
 
+%%% Incompatibility constraints
+left_incompatible((O,C),V,(O',D))  :- constraint((T,C),"incompatible"), left((T,C),P,V), selector(O,P,(O',D)), selected(O,T), selected(O').
+right_incompatible((O,C),V,(O',D)) :- constraint((T,C),"incompatible"), right((T,C),P,V),selector(O,P,(O',D)), selected(O,T), selected(O').
+
+:- left_incompatible(C,V1,X1), right_incompatible(C,V2,X2), val(X1,V1), val(X2,V2).
+
+
 % Define statements
 #defined type/1.
 #defined part/3.
