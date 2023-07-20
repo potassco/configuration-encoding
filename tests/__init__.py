@@ -22,7 +22,7 @@ class SolverClingo():
 
         ret = []
         self.ctl.solve(on_model=lambda m: ret.append(
-            [str(sym) for sym in m.symbols(shown=True)]))
+            [str(sym) for sym in m.symbols(shown=True)])) # TODO: Add sorted()?
         ret.sort()
         return ret
 
