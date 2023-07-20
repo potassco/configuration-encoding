@@ -1,11 +1,11 @@
 """
 Tests checking the configuration encoding in clingo.
 """
+from unittest import TestCase
 from tests import solve
-import unittest
 
 
-class TestMain(unittest.TestCase):
+class TestMain(TestCase):
 
     def test_object_part(self):
         self.assertEqual(solve('type(a).'), [['selected((),a)']])

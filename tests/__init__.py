@@ -1,9 +1,9 @@
 '''
-Basic functions to run tests
+Basic functions to run tests in clingo and fclingo
 '''
-
+import json
+from subprocess import PIPE, Popen
 from clingo.control import Control
-# from clingo.ast import ProgramBuilder, parse_string
 
 
 class SolverClingo():
@@ -34,5 +34,15 @@ def solve(f, options=()):
 
 
 def fsolve(f, options=()):
-    # TODO
-    pass
+    instance = f'tests/instances/fclingo/{f}'
+    solve = Popen(
+        ['fclingo', 'encoding_fclingo.lp', instance, '0', '--outf=2'],
+        stdout=PIPE,
+        stderr=PIPE)
+
+    out, _ = solve.communicate()
+    models = json.loads(out.decode('utf-8').replace(
+        '__csp', 'val'))['Call'][0]['Witnesses']
+    models = [sorted(m['Value']) for m in models]
+    models.sort()
+    return models
