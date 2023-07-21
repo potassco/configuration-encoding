@@ -141,5 +141,5 @@ right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),P = constant(N
 
 #show selected/2.
 #show val/2.
-% &show {(O,D) : object(O,T), attr(T,D,_), not non_numeric((O,D))}.
+&show {(O,D) : object(O,T), attr(T,D,_), not non_numeric((O,D))}.
 #show connected/3.
