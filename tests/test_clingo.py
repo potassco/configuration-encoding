@@ -1,11 +1,11 @@
 """
 Tests checking the configuration encoding in clingo.
 """
+from unittest import TestCase
 from tests import solve
-import unittest
 
 
-class TestMain(unittest.TestCase):
+class TestMain(TestCase):
 
     def test_object_part(self):
         self.assertEqual(solve('type(a).'), [['selected((),a)']])
@@ -63,28 +63,27 @@ class TestMain(unittest.TestCase):
             [['selected((),a)', 'val(((),b),1)'],
              ['selected((),a)', 'val(((),b),2)'],
              ['selected((),a)', 'val(((),b),3)']])
-        self.assertEqual(
-            solve('simple_sum.lp'),
-            [[
-                'selected((),a)', 'selected((b,((),0)),b)',
-                'selected((b,((),1)),b)', 'val(((b,((),0)),c),1)',
-                'val(((b,((),1)),c),1)', 'val(((),s),2)'
-            ],
-             [
-                 'selected((),a)', 'selected((b,((),0)),b)',
-                 'selected((b,((),1)),b)', 'val(((b,((),0)),c),1)',
-                 'val(((b,((),1)),c),2)', 'val(((),s),3)'
-             ],
-             [
-                 'selected((),a)', 'selected((b,((),0)),b)',
-                 'selected((b,((),1)),b)', 'val(((b,((),0)),c),2)',
-                 'val(((b,((),1)),c),2)', 'val(((),s),4)'
-             ],
-             [
-                 'selected((),a)', 'selected((b,((),0)),b)',
-                 'selected((b,((),1)),b)', 'val(((b,((),1)),c),1)',
-                 'val(((b,((),0)),c),2)', 'val(((),s),3)'
-             ]])
+        self.assertEqual(solve('simple_sum.lp'),
+                         [[
+                             'selected((),a)', 'selected((b,((),0)),b)',
+                             'selected((b,((),1)),b)', 'val(((),s),2)',
+                             'val(((b,((),0)),c),1)', 'val(((b,((),1)),c),1)'
+                         ],
+                          [
+                              'selected((),a)', 'selected((b,((),0)),b)',
+                              'selected((b,((),1)),b)', 'val(((),s),3)',
+                              'val(((b,((),0)),c),1)', 'val(((b,((),1)),c),2)'
+                          ],
+                          [
+                              'selected((),a)', 'selected((b,((),0)),b)',
+                              'selected((b,((),1)),b)', 'val(((),s),3)',
+                              'val(((b,((),0)),c),2)', 'val(((b,((),1)),c),1)'
+                          ],
+                          [
+                              'selected((),a)', 'selected((b,((),0)),b)',
+                              'selected((b,((),1)),b)', 'val(((),s),4)',
+                              'val(((b,((),0)),c),2)', 'val(((b,((),1)),c),2)'
+                          ]])
 
         self.assertEqual(solve('simple_count.lp'), [[
             'selected((),a)', 'selected((b,((),0)),b)',
