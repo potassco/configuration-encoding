@@ -1,7 +1,7 @@
 type(a).
 
 attr(a,b,"numeric"). dom(a,b,1,3).
-attr(a,c,"numeric"). dom(a,c,2,4).
+attr(a,c,"numeric"). dom(a,c,2,3).
 
 attr(a,m,"min").
 path(a,m,(b,())).
