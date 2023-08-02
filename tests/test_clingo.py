@@ -85,12 +85,58 @@ class TestMain(TestCase):
                               'val(((b,((),0)),c),2)', 'val(((b,((),1)),c),2)'
                           ]])
 
-        self.assertEqual(solve('simple_count.lp'), [[
+        self.assertEqual(solve('simple_object_count.lp'), [[
             'selected((),a)', 'selected((b,((),0)),b)',
             'selected((b,((),1)),b)', 'val(((),c),2)'
         ], ['selected((),a)', 'selected((b,((),0)),b)', 'val(((),c),1)'
             ], ['selected((),a)', 'val(((),c),0)']])
 
+        self.assertEqual(solve('simple_attr_count.lp'),
+                         [[
+                             'selected((),a)', 'val(((),b1),1)',
+                             'val(((),b2),1)', 'val(((),c),1)'
+                         ],
+                          [
+                              'selected((),a)', 'val(((),b1),1)',
+                              'val(((),b2),2)', 'val(((),c),2)'
+                          ],
+                          [
+                              'selected((),a)', 'val(((),b1),2)',
+                              'val(((),b2),1)', 'val(((),c),2)'
+                          ],
+                          [
+                              'selected((),a)', 'val(((),b1),2)',
+                              'val(((),b2),2)', 'val(((),c),1)'
+                          ]])
+        self.assertEqual(solve('count_mixed.lp'),
+                         [[
+                             'selected((),a)', 'selected((b,((),0)),b)',
+                             'selected((b,((),1)),b)', 'val(((),c),3)',
+                             'val(((b,((),0)),d),1)', 'val(((b,((),1)),d),1)'
+                         ],
+                          [
+                              'selected((),a)', 'selected((b,((),0)),b)',
+                              'selected((b,((),1)),b)', 'val(((),c),3)',
+                              'val(((b,((),0)),d),2)', 'val(((b,((),1)),d),2)'
+                          ],
+                          [
+                              'selected((),a)', 'selected((b,((),0)),b)',
+                              'selected((b,((),1)),b)', 'val(((),c),4)',
+                              'val(((b,((),0)),d),1)', 'val(((b,((),1)),d),2)'
+                          ],
+                          [
+                              'selected((),a)', 'selected((b,((),0)),b)',
+                              'selected((b,((),1)),b)', 'val(((),c),4)',
+                              'val(((b,((),0)),d),2)', 'val(((b,((),1)),d),1)'
+                          ],
+                          [
+                              'selected((),a)', 'selected((b,((),0)),b)',
+                              'val(((),c),2)', 'val(((b,((),0)),d),1)'
+                          ],
+                          [
+                              'selected((),a)', 'selected((b,((),0)),b)',
+                              'val(((),c),2)', 'val(((b,((),0)),d),2)'
+                          ], ['selected((),a)', 'val(((),c),0)']])
         self.assertEqual(solve('simple_min.lp'), [[
             'selected((),a)', 'val(((),b),1)', 'val(((),c),2)', 'val(((),m),1)'
         ], [
