@@ -57,6 +57,21 @@ class TestMain(TestCase):
 
         self.assertEqual(len(solve('connection.lp', ['-c', 'num_hdd=4'])), 34)
 
+        self.assertEqual(
+            solve('connection_constraint.lp', []),
+            [[
+                'connected(((b,0),((),0)),((b,0),((),0)),previous)',
+                'connected(((b,1),((),0)),((b,0),((),0)),previous)',
+                'selected(((b,0),((),0)),b)', 'selected(((b,1),((),0)),b)',
+                'selected((),a)', 'val((((b,0),((),0)),id),0)',
+                'val((((b,1),((),0)),id),1)'
+            ],
+             [
+                 'connected(((b,0),((),0)),((b,0),((),0)),previous)',
+                 'selected(((b,0),((),0)),b)', 'selected((),a)',
+                 'val((((b,0),((),0)),id),0)'
+             ], ['selected((),a)']])
+
     def test_attribute(self):
         self.assertEqual(
             solve('type(a). attr(a,b,"discrete"). dom(a,b,(1;2;3)).'),
