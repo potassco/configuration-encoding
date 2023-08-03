@@ -119,14 +119,13 @@ class TestMain(TestCase):
             'selected((),a)', 'val(((),b),3)', 'val(((),c),3)', 'val(((),m),3)'
         ]])
 
-        # TODO: How to test count at optional?
-        # self.assertEqual(
-        #     fsolve('count_at_optional.lp'),
-        #     [['selected((),a)','val(((b,((),0)),cou),0)'],
-        #      [
-        #          'selected((),a)', 'selected((b,((),0)),b)',
-        #          'selected((c,((b,((),0)),0)),c)', 'val(((b,((),0)),cou),1)'
-        #      ]])
+        self.assertEqual(
+            fsolve('count_at_optional.lp'),
+            [['selected((),a)'],
+             [
+                 'selected((),a)', 'selected((b,((),0)),b)',
+                 'selected((c,((b,((),0)),0)),c)', 'val(((b,((),0)),cou),1)'
+             ]])
 
     def test_constraint(self):
         self.assertEqual(

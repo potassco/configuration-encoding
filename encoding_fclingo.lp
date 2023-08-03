@@ -65,13 +65,13 @@ selector(O,(D,P),(O',D)) :- selector(O,P,O'), object(O',T), attr(T,D,_).
 % Count
 % TODO: Implement for discrete attributes
 % val((O,D),V) :- object(O,T), attr(T,D,"count"), V = #count { O',P : path(T,D,P), selector(O,P,O') }.
-&fsum{ 1,O',P : path(T,D,P), selector(O,P,O'), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"count").
+&fsum{ 1,O' : path(T,D,P), selector(O,P,O'), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"count").
 % Sum
-&fsum{ X,P : path(T,D,P), selector(O,P,X) } =: (O,D) :- selected(O,T), attr(T,D,"sum").
+&fsum{ X : path(T,D,P), selector(O,P,X) } =: (O,D) :- selected(O,T), attr(T,D,"sum").
 % Min
-&fmin{ X,P : path(T,D,P), selector(O,P,X) } =: (O,D) :- selected(O,T), attr(T,D,"min").
+&fmin{ X : path(T,D,P), selector(O,P,X) } =: (O,D) :- selected(O,T), attr(T,D,"min").
 % Max
-&fmax{ X,P : path(T,D,P), selector(O,P,X) } =: (O,D) :- selected(O,T), attr(T,D,"max").
+&fmax{ X : path(T,D,P), selector(O,P,X) } =: (O,D) :- selected(O,T), attr(T,D,"max").
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Constraints
