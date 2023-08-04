@@ -50,11 +50,25 @@ association(O1,O2,D,"connection") :- connection(S,T,D), object(O1,S), object(O2,
 :- val(X,V1), val(X,V2), V1 < V2.
 
 %%% Selectors
+% Determine longest path in constraints and aggregates
+len_path(P,P,0) :- path(_,_,P).
+len_path(P,P,0) :- column(_,_,P).
+len_path(P,P,0) :- right(_,P).
+len_path(P,P,0) :- left(_,P).
+
+len_path(P,P',N+1) :- len_path(P,(D,P'),N).
+len_path(P,N) :- len_path(P,(),N).
+longest_path(X) :- X = #max { N : len_path(P,N) }.
+
 % An object selector (O,P,O') selects
 %   all objects O' which lie on
 %   path P relative to object O
-selector(O,(),O) :- object(O).
-selector(O,(D,P),(D,(O',I))):- selector(O,P,O'), object((D,(O',I))).
+% Selectors are created only for the longest path length needed
+selector(O,0,(),O) :- object(O).
+selector(O,N+1,(D,P),(D,(O',I))):- selector(O,N,P,O'), object((D,(O',I))). % Partonomic paths
+selector(O,N+1,(D,P),O'') :- selector(O,N,P,O'), connected(O',O'',D), longest_path(X), N < X.    % Connection paths
+
+selector(O,P,O') :- selector(O,_,P,O').
 
 % An attribute selector (O,P,X) selects
 %   all attribute variables X which lie on
@@ -65,7 +79,8 @@ selector(O,(D,P),(O',D)) :- selector(O,P,O'), object(O',T), attr(T,D,_).
 % Count
 % TODO: Implement for discrete attributes
 % val((O,D),V) :- object(O,T), attr(T,D,"count"), V = #count { O',P : path(T,D,P), selector(O,P,O') }.
-&fsum{ 1,O' : path(T,D,P), selector(O,P,O'), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"count").
+&fsum{ 1,O' : path(T,D,P), selector(O,P,O'), selected(O');
+       1,V  : path(T,D,P), selector(O,P,X), val(X,V) } =: (O,D) :- selected(O,T), attr(T,D,"count").
 % Sum
 &fsum{ X : path(T,D,P), selector(O,P,X) } =: (O,D) :- selected(O,T), attr(T,D,"sum").
 % Min
