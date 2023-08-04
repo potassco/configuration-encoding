@@ -79,8 +79,7 @@ selector(O,(D,P),(O',D)) :- selector(O,P,O'), object(O',T), attr(T,D,_).
 % Count
 % TODO: Implement for discrete attributes
 % val((O,D),V) :- object(O,T), attr(T,D,"count"), V = #count { O',P : path(T,D,P), selector(O,P,O') }.
-&fsum{ 1,O' : path(T,D,P), selector(O,P,O'), selected(O');
-       1,V  : path(T,D,P), selector(O,P,X), val(X,V) } =: (O,D) :- selected(O,T), attr(T,D,"count").
+&fsum{ 1,O' : path(T,D,P), selector(O,P,O'), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"count").
 % Sum
 &fsum{ X : path(T,D,P), selector(O,P,X) } =: (O,D) :- selected(O,T), attr(T,D,"sum").
 % Min
