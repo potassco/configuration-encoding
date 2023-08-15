@@ -31,8 +31,10 @@ attr(node,T,label,@concat(
                         "{% set attr = attr|default({}) %}",
                         "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0' CELLPADDING='1'>",
                         "<TR><TD ><B>{{name.capitalize()}} </B></TD></TR>",
-                        "<TR><TD ALIGN='left' > {% for key,a in aggr|dictsort %} {{a}} <br ALIGN='left' />{% endfor %}",
-                        "{% for a in attr|groupby(0) %} {{a[0]}} <br ALIGN='left' />{% endfor %}</TD></TR>",
+                        "{% if aggr != {} and attr != {} %}",
+                            "<TR><TD ALIGN='left' >{% for key,a in aggr|dictsort %} {{a}} <br ALIGN='left' />{% endfor %}",
+                            "{% for a in attr|groupby(0) %} {{a[0]}} <br ALIGN='left' />{% endfor %}</TD></TR>",
+                        "{% endif %}",
                         "</TABLE>>"))   :- type(T).
 
 attr(node,T,(label,name),T)             :- type(T).
