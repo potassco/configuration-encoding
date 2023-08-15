@@ -100,7 +100,7 @@ class TestMain(TestCase):
                               'val(((b,((),0)),c),2)', 'val(((b,((),1)),c),2)'
                           ]])
 
-        self.assertEqual(fsolve('simple_count.lp'), [[
+        self.assertEqual(fsolve('simple_object_count.lp'), [[
             'selected((),a)', 'selected((b,((),0)),b)',
             'selected((b,((),1)),b)', 'val(((),c),2)'
         ], ['selected((),a)', 'selected((b,((),0)),b)', 'val(((),c),1)'
