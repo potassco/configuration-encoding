@@ -24,8 +24,8 @@ multiplicity(wheel,bag,bag,0).
 multiplicity(wheel,bag,bag,2).
 
 %%% Attributes
-% attr(bike,totalWeight,"sum").
-% attr(bike,stowage,"sum").
+attr(bike,totalWeight,"sum").
+attr(bike,stowage,"sum").
 
 attr(bike,maxWeight,"numeric").
 dom(bike,maxWeight,5000,5000).

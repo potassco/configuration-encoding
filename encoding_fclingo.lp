@@ -81,11 +81,11 @@ selector(O,(D,P),(O',D)) :- selector(O,P,O'), object(O',T), attr(T,D,_).
 % val((O,D),V) :- object(O,T), attr(T,D,"count"), V = #count { O',P : path(T,D,P), selector(O,P,O') }.
 &fsum{ 1,O' : path(T,D,P), selector(O,P,O'), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"count").
 % Sum
-&fsum{ X : path(T,D,P), selector(O,P,X) } =: (O,D) :- selected(O,T), attr(T,D,"sum").
+&fsum{ (O',D') : path(T,D,P), selector(O,P,(O',D')), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"sum").
 % Min
-&fmin{ X : path(T,D,P), selector(O,P,X) } =: (O,D) :- selected(O,T), attr(T,D,"min").
+&fmin{ (O',D') : path(T,D,P), selector(O,P,(O',D')), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"min").
 % Max
-&fmax{ X : path(T,D,P), selector(O,P,X) } =: (O,D) :- selected(O,T), attr(T,D,"max").
+&fmax{ (O',D') : path(T,D,P), selector(O,P,(O',D')), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"max").
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Constraints
