@@ -191,3 +191,8 @@ class TestMain(TestCase):
         self.assertEqual(len(solve('tb_with_optional_reverse.lp')), 4)
 
         self.assertEqual(len(solve('comparison_of_optional.lp')), 3)
+
+        self.assertEqual(len(solve('alldiff.lp', ['-c', 'n=2'])), 2)
+        self.assertEqual(len(solve('alldiff.lp', ['-c', 'n=3'])), 6)
+        self.assertEqual(len(solve('alldiff.lp', ['-c', 'n=4'])), 24)
+        self.assertEqual(len(solve('alldiff.lp', ['-c', 'n=5'])), 120)
