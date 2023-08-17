@@ -116,8 +116,8 @@ hit_row((O,C),GP,Row) :- entry((T,C),(_,Row),_), 0 = #sum{ 1,Col: entry((T,C),(C
 :- constraint((T,C),"table"), selected(O,T), path_expansion((O,C),GP), not hit_row((O,C),GP,_).
 
 %%% Comparison constraints
-left_compare((O,C),Op,(O',D))  :- constraint((T,C),Op), left((T,C),P), selector(O,P,(O',D)), selected(O,T), selected(O').
-right_compare((O,C),Op,(O',D)) :- constraint((T,C),Op), right((T,C),P),selector(O,P,(O',D)), selected(O,T), selected(O').
+left_compare((O,C),Op,X)  :- constraint((T,C),Op), left((T,C),P), selector(O,P,X), selected(O,T), selected(O'), X = (O',_).
+right_compare((O,C),Op,X) :- constraint((T,C),Op), right((T,C),P),selector(O,P,X), selected(O,T), selected(O'), X = (O',_).
 
 left_compare((O,C),Op,P)  :- constraint((T,C),Op), left((T,C),P), P = constant(N), selected(O,T).
 right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),P = constant(N), selected(O,T).
@@ -127,14 +127,21 @@ right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),P = constant(N
 &fsum{N} =: P :- left_compare(_,_,P), P=constant(N).
 &fsum{N} =: P :- right_compare(_,_,P), P=constant(N).
 
-% TODO: Implement this for discrete attributes as well
+% Discrete attributes
+:- left_compare(C,"eq",X1), right_compare(C,"eq",X2), val(X1,V1), val(X2,V2), V1 != V2.
+:- left_compare(C,"neq",X1), right_compare(C,"neq",X2), val(X1,V1), val(X2,V2), V1 = V2.
+:- left_compare(C,"lt",X1), right_compare(C,"lt",X2), val(X1,V1), val(X2,V2), V1 >= V2.
+:- left_compare(C,"lte",X1), right_compare(C,"lte",X2), val(X1,V1), val(X2,V2), V1 > V2.
+:- left_compare(C,"gt",X1), right_compare(C,"gt",X2), val(X1,V1), val(X2,V2), V1 <= V2.
+:- left_compare(C,"gte",X1), right_compare(C,"gte",X2), val(X1,V1), val(X2,V2), V1 < V2.
 
-&fsum{X1} = X2 :- left_compare(C,"eq",X1),  right_compare(C,"eq",X2).
-&fsum{X1} !=X2 :- left_compare(C,"neq",X1), right_compare(C,"neq",X2).
-&fsum{X1} < X2 :- left_compare(C,"lt",X1),  right_compare(C,"lt",X2).
-&fsum{X1} <=X2 :- left_compare(C,"lte",X1), right_compare(C,"lte",X2).
-&fsum{X1} > X2 :- left_compare(C,"gt",X1),  right_compare(C,"gt",X2).
-&fsum{X1} >=X2 :- left_compare(C,"gte",X1), right_compare(C,"gte",X2).
+% Numeric attributes
+:- left_compare(C,"eq",X1),  right_compare(C,"eq",X2),  &fsum{X1} != X2.
+:- left_compare(C,"neq",X1), right_compare(C,"neq",X2), &fsum{X1} =  X2.
+:- left_compare(C,"lt",X1),  right_compare(C,"lt",X2),  &fsum{X1} >= X2.
+:- left_compare(C,"lte",X1), right_compare(C,"lte",X2), &fsum{X1} >  X2.
+:- left_compare(C,"gt",X1),  right_compare(C,"gt",X2),  &fsum{X1} <= X2.
+:- left_compare(C,"gte",X1), right_compare(C,"gte",X2), &fsum{X1} <  X2.
 
 
 %%% All different constraint

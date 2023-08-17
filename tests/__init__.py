@@ -66,32 +66,3 @@ def fsolve(f, options=()):
         models = [sorted(m.split(' ')) for m in models]
         models.sort()
         return models
-
-
-# def fsolve(f, options=()):
-#     if f.endswith('.lp'):
-#         instance = f'tests/instances/fclingo/{f}'
-#     else:
-#         with open(TMP_FILE, 'w') as tmp:
-#             tmp.write(f)
-#         instance = TMP_FILE
-
-#     solve = Popen(
-#         ['fclingo', 'encoding_fclingo.lp', instance, '0', '--outf=2'] +
-#         list(options),
-#         stdout=PIPE,
-#         stderr=PIPE)
-
-#     out, _ = solve.communicate()
-#     out = json.loads(out.decode('utf-8').replace('__csp', 'val'))
-#     # Remove temp file
-#     if instance == TMP_FILE:
-#         remove(TMP_FILE)
-
-#     if out['Result'] == 'SATISFIABLE':
-#         models = out['Call'][0]['Witnesses']
-#         models = [sorted(m['Value']) for m in models]
-#         models.sort()
-#         return models
-#     else:
-#         return []

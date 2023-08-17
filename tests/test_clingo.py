@@ -190,6 +190,31 @@ class TestMain(TestCase):
         self.assertEqual(len(solve('tb_with_optional.lp')), 4)
         self.assertEqual(len(solve('tb_with_optional_reverse.lp')), 4)
 
+        self.assertEqual(
+            solve('comparison.lp', ['-c', 'type="eq"']),
+            [['selected((),a)', 'val(((),b),1)', 'val(((),c),1)'],
+             ['selected((),a)', 'val(((),b),2)', 'val(((),c),2)']])
+        self.assertEqual(
+            solve('comparison.lp', ['-c', 'type="neq"']),
+            [['selected((),a)', 'val(((),b),1)', 'val(((),c),2)'],
+             ['selected((),a)', 'val(((),b),2)', 'val(((),c),1)']])
+        self.assertEqual(
+            solve('comparison.lp', ['-c', 'type="lt"']),
+            [['selected((),a)', 'val(((),b),1)', 'val(((),c),2)']])
+        self.assertEqual(
+            solve('comparison.lp', ['-c', 'type="lte"']),
+            [['selected((),a)', 'val(((),b),1)', 'val(((),c),1)'],
+             ['selected((),a)', 'val(((),b),1)', 'val(((),c),2)'],
+             ['selected((),a)', 'val(((),b),2)', 'val(((),c),2)']])
+        self.assertEqual(
+            solve('comparison.lp', ['-c', 'type="gt"']),
+            [['selected((),a)', 'val(((),b),2)', 'val(((),c),1)']])
+        self.assertEqual(
+            solve('comparison.lp', ['-c', 'type="gte"']),
+            [['selected((),a)', 'val(((),b),1)', 'val(((),c),1)'],
+             ['selected((),a)', 'val(((),b),2)', 'val(((),c),1)'],
+             ['selected((),a)', 'val(((),b),2)', 'val(((),c),2)']])
+
         self.assertEqual(len(solve('comparison_of_optional.lp')), 3)
 
         self.assertEqual(len(solve('alldiff.lp', ['-c', 'n=2'])), 2)
