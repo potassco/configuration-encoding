@@ -48,11 +48,26 @@ association(O1,O2,D,"connection") :- connection(S,T,D), object(O1,S), object(O2,
 :- val(X,V1), val(X,V2), V1 < V2.
 
 %%% Selectors
+% Determine longest path in constraints and aggregates
+len_path(P,P,0) :- path(_,_,P).
+len_path(P,P,0) :- column(_,_,P).
+len_path(P,P,0) :- right(_,P).
+len_path(P,P,0) :- left(_,P).
+len_path(P,P,0) :- path(_,P).
+
+len_path(P,P',N+1) :- len_path(P,(D,P'),N).
+len_path(P,N) :- len_path(P,(),N).
+longest_path(X) :- X = #max { N : len_path(P,N) }.
+
 % An object selector (O,P,O') selects
 %   all objects O' which lie on
 %   path P relative to object O
-selector(O,(),O) :- object(O).
-selector(O,(D,P),(D,(O',I))):- selector(O,P,O'), object((D,(O',I))).
+% Selectors are created only for the longest path length needed
+selector(O,0,(),O) :- object(O).
+selector(O,N+1,(D,P),(D,(O',I))):- selector(O,N,P,O'), object((D,(O',I))). % Partonomic paths
+selector(O,N+1,(D,P),O'') :- selector(O,N,P,O'), connected(O',O'',D), longest_path(X), N < X.    % Connection paths
+
+selector(O,P,O') :- selector(O,_,P,O').
 
 % An attribute selector (O,P,X) selects
 %   all attribute variables X which lie on
@@ -61,13 +76,14 @@ selector(O,(D,P),(O',D)) :- selector(O,P,O'), object(O',T), attr(T,D,_).
 
 %%% Aggregates
 % Count
-val((O,D),V) :- selected(O,T), attr(T,D,"count"), V = #count { O',P : path(T,D,P), selector(O,P,O'), selected(O') }.
+val((O,D),V) :- selected(O,T), attr(T,D,"count"), V = #count { O' : path(T,D,P), selector(O,P,O'), selected(O');
+                                                               V' : path(T,D,P), selector(O,P,X), val(X,V') }.
 % Sum
-val((O,D),V) :- selected(O,T), attr(T,D,"sum"), V = #sum { V',X,P : path(T,D,P), val(X,V'), selector(O,P,X) }.
+val((O,D),V) :- selected(O,T), attr(T,D,"sum"), V = #sum { V',X : path(T,D,P), val(X,V'), selector(O,P,X) }.
 % Min
-val((O,D),V) :- selected(O,T), attr(T,D,"min"), V = #min { V',X,P : path(T,D,P), val(X,V'), selector(O,P,X) }.
+val((O,D),V) :- selected(O,T), attr(T,D,"min"), V = #min { V',X : path(T,D,P), val(X,V'), selector(O,P,X) }.
 % Max
-val((O,D),V) :- selected(O,T), attr(T,D,"max"), V = #max { V',X,P : path(T,D,P), val(X,V'), selector(O,P,X) }.
+val((O,D),V) :- selected(O,T), attr(T,D,"max"), V = #max { V',X : path(T,D,P), val(X,V'), selector(O,P,X) }.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Constraints
@@ -102,15 +118,20 @@ right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),P = constant(N
 val(P,N) :- left_compare(_,_,P), P=constant(N).
 val(P,N) :- right_compare(_,_,P), P=constant(N).
 
-sat_pair(C,X1,X2) :- left_compare(C,"eq",X1), right_compare(C,"eq",X2), val(X1,V1), val(X2,V2), V1 = V2.
-sat_pair(C,X1,X2) :- left_compare(C,"neq",X1), right_compare(C,"neq",X2), val(X1,V1), val(X2,V2), V1 != V2.
-sat_pair(C,X1,X2) :- left_compare(C,"lt",X1), right_compare(C,"lt",X2), val(X1,V1), val(X2,V2), V1 < V2.
-sat_pair(C,X1,X2) :- left_compare(C,"lte",X1), right_compare(C,"lte",X2), val(X1,V1), val(X2,V2), V1 <= V2.
-sat_pair(C,X1,X2) :- left_compare(C,"gt",X1), right_compare(C,"gt",X2), val(X1,V1), val(X2,V2), V1 > V2.
-sat_pair(C,X1,X2) :- left_compare(C,"gte",X1), right_compare(C,"gte",X2), val(X1,V1), val(X2,V2), V1 >= V2.
+:- left_compare(C,"eq",X1), right_compare(C,"eq",X2), val(X1,V1), val(X2,V2), V1 != V2.
+:- left_compare(C,"neq",X1), right_compare(C,"neq",X2), val(X1,V1), val(X2,V2), V1 = V2.
+:- left_compare(C,"lt",X1), right_compare(C,"lt",X2), val(X1,V1), val(X2,V2), V1 >= V2.
+:- left_compare(C,"lte",X1), right_compare(C,"lte",X2), val(X1,V1), val(X2,V2), V1 > V2.
+:- left_compare(C,"gt",X1), right_compare(C,"gt",X2), val(X1,V1), val(X2,V2), V1 <= V2.
+:- left_compare(C,"gte",X1), right_compare(C,"gte",X2), val(X1,V1), val(X2,V2), V1 < V2.
 
-% A comparison constraint is not satisfied if some pair of attribute variables does not satisfy it
-:- left_compare(C,Op,X1), right_compare(C,Op,X2), not sat_pair(C,X1,X2).
+
+%%% All different constraint
+alldiff((O,C),X) :- constraint((T,C),"alldiff"), path((T,C),P), selector(O,P,X),
+                    selected(O,T), selected(O'), X=(O',_).
+% An all different constraint is not satisfied if two different attribute valuation have the same value assigned
+:- alldiff(C,X1), alldiff(C,X2), val(X1,V), val(X2,V), X1 < X2.
+
 
 %%% Incompatibility constraints
 left_incompatible((O,C),V,(O',D))  :- constraint((T,C),"incompatible"), left((T,C),P,V), selector(O,P,(O',D)), selected(O,T), selected(O').
@@ -135,6 +156,8 @@ right_incompatible((O,C),V,(O',D)) :- constraint((T,C),"incompatible"), right((T
 #defined entry/3.
 #defined left/2.
 #defined right/2.
+#defined path/2.
+#defined alldiff/2.
 
 #show selected/2.
 #show val/2.

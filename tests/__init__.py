@@ -1,7 +1,6 @@
 '''
 Basic functions to run tests in clingo and fclingo
 '''
-import json
 from os import remove
 from subprocess import PIPE, Popen
 
@@ -46,22 +45,23 @@ def fsolve(f, options=()):
             tmp.write(f)
         instance = TMP_FILE
 
-    solve = Popen(
-        ['fclingo', 'encoding_fclingo.lp', instance, '0', '--outf=2'] +
-        list(options),
-        stdout=PIPE,
-        stderr=PIPE)
+    solve = Popen(['fclingo', 'encoding_fclingo.lp', instance, '0'] +
+                  list(options),
+                  stdout=PIPE,
+                  stderr=PIPE)
 
     out, _ = solve.communicate()
-    out = json.loads(out.decode('utf-8').replace('__csp', 'val'))
+    out = out.decode('utf-8')
+
     # Remove temp file
     if instance == TMP_FILE:
         remove(TMP_FILE)
 
-    if out['Result'] == 'SATISFIABLE':
-        models = out['Call'][0]['Witnesses']
-        models = [sorted(m['Value']) for m in models]
+    if 'UNSATISFIABLE' in out:
+        return []
+    else:
+        out = out.split('\n')
+        models = out[out.index('Answer: 1'):out.index('SATISFIABLE')][1::2]
+        models = [sorted(m.split(' ')) for m in models]
         models.sort()
         return models
-    else:
-        return []

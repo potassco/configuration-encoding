@@ -57,6 +57,21 @@ class TestMain(TestCase):
 
         self.assertEqual(len(fsolve('connection.lp', ['-c', 'num_hdd=4'])), 34)
 
+        self.assertEqual(
+            fsolve('connection_constraint.lp', []),
+            [[
+                'connected(((b,0),((),0)),((b,0),((),0)),previous)',
+                'connected(((b,1),((),0)),((b,0),((),0)),previous)',
+                'selected(((b,0),((),0)),b)', 'selected(((b,1),((),0)),b)',
+                'selected((),a)', 'val((((b,0),((),0)),id),0)',
+                'val((((b,1),((),0)),id),1)'
+            ],
+             [
+                 'connected(((b,0),((),0)),((b,0),((),0)),previous)',
+                 'selected(((b,0),((),0)),b)', 'selected((),a)',
+                 'val((((b,0),((),0)),id),0)'
+             ], ['selected((),a)']])
+
     def test_attribute(self):
         self.assertEqual(
             fsolve('type(a). attr(a,b,"discrete"). dom(a,b,(1;2;3)).'),
@@ -119,23 +134,88 @@ class TestMain(TestCase):
             'selected((),a)', 'val(((),b),3)', 'val(((),c),3)', 'val(((),m),3)'
         ]])
 
-        # TODO: How to test count at optional?
-        # self.assertEqual(
-        #     fsolve('count_at_optional.lp'),
-        #     [['selected((),a)','val(((b,((),0)),cou),0)'],
-        #      [
-        #          'selected((),a)', 'selected((b,((),0)),b)',
-        #          'selected((c,((b,((),0)),0)),c)', 'val(((b,((),0)),cou),1)'
-        #      ]])
+        self.assertEqual(
+            fsolve('count_at_optional.lp'),
+            [['selected((),a)'],
+             [
+                 'selected((),a)', 'selected((b,((),0)),b)',
+                 'selected((c,((b,((),0)),0)),c)', 'val(((b,((),0)),cou),1)'
+             ]])
 
     def test_constraint(self):
         self.assertEqual(
             fsolve('tb_basic.lp'),
             [['selected((),a)', 'val(((),b),"b1")', 'val(((),c),"c1")'],
              ['selected((),a)', 'val(((),b),"b2")', 'val(((),c),"c2")']])
+        self.assertEqual(
+            fsolve('tb_mixed.lp'),
+            [['selected((),a)', 'val(((),b),"b1")', 'val(((),c),1)'],
+             ['selected((),a)', 'val(((),b),"b2")', 'val(((),c),2)']])
+
         self.assertEqual(len(fsolve('tb_colors.lp')), 8)
 
         self.assertEqual(len(fsolve('tb_with_optional.lp')), 4)
         self.assertEqual(len(fsolve('tb_with_optional_reverse.lp')), 4)
 
         self.assertEqual(len(fsolve('comparison_of_optional.lp')), 3)
+
+        self.assertEqual(
+            fsolve('comparison_discrete.lp', ['-c', 'type="eq"']),
+            [['selected((),a)', 'val(((),b),1)', 'val(((),c),1)'],
+             ['selected((),a)', 'val(((),b),2)', 'val(((),c),2)']])
+        self.assertEqual(
+            fsolve('comparison_discrete.lp', ['-c', 'type="neq"']),
+            [['selected((),a)', 'val(((),b),1)', 'val(((),c),2)'],
+             ['selected((),a)', 'val(((),b),2)', 'val(((),c),1)']])
+        self.assertEqual(
+            fsolve('comparison_discrete.lp', ['-c', 'type="lt"']),
+            [['selected((),a)', 'val(((),b),1)', 'val(((),c),2)']])
+        self.assertEqual(
+            fsolve('comparison_discrete.lp', ['-c', 'type="lte"']),
+            [['selected((),a)', 'val(((),b),1)', 'val(((),c),1)'],
+             ['selected((),a)', 'val(((),b),1)', 'val(((),c),2)'],
+             ['selected((),a)', 'val(((),b),2)', 'val(((),c),2)']])
+        self.assertEqual(
+            fsolve('comparison_discrete.lp', ['-c', 'type="gt"']),
+            [['selected((),a)', 'val(((),b),2)', 'val(((),c),1)']])
+        self.assertEqual(
+            fsolve('comparison_discrete.lp', ['-c', 'type="gte"']),
+            [['selected((),a)', 'val(((),b),1)', 'val(((),c),1)'],
+             ['selected((),a)', 'val(((),b),2)', 'val(((),c),1)'],
+             ['selected((),a)', 'val(((),b),2)', 'val(((),c),2)']])
+
+        self.assertEqual(
+            fsolve('comparison_numeric.lp', ['-c', 'type="eq"']),
+            [['selected((),a)', 'val(((),b),1)', 'val(((),c),1)'],
+             ['selected((),a)', 'val(((),b),2)', 'val(((),c),2)']])
+        self.assertEqual(
+            fsolve('comparison_numeric.lp', ['-c', 'type="neq"']),
+            [['selected((),a)', 'val(((),b),1)', 'val(((),c),2)'],
+             ['selected((),a)', 'val(((),b),2)', 'val(((),c),1)']])
+        self.assertEqual(
+            fsolve('comparison_numeric.lp', ['-c', 'type="lt"']),
+            [['selected((),a)', 'val(((),b),1)', 'val(((),c),2)']])
+        self.assertEqual(
+            fsolve('comparison_numeric.lp', ['-c', 'type="lte"']),
+            [['selected((),a)', 'val(((),b),1)', 'val(((),c),1)'],
+             ['selected((),a)', 'val(((),b),1)', 'val(((),c),2)'],
+             ['selected((),a)', 'val(((),b),2)', 'val(((),c),2)']])
+        self.assertEqual(
+            fsolve('comparison_numeric.lp', ['-c', 'type="gt"']),
+            [['selected((),a)', 'val(((),b),2)', 'val(((),c),1)']])
+        self.assertEqual(
+            fsolve('comparison_numeric.lp', ['-c', 'type="gte"']),
+            [['selected((),a)', 'val(((),b),1)', 'val(((),c),1)'],
+             ['selected((),a)', 'val(((),b),2)', 'val(((),c),1)'],
+             ['selected((),a)', 'val(((),b),2)', 'val(((),c),2)']])
+
+        self.assertEqual(len(fsolve('alldiff_discrete.lp', ['-c', 'n=2'])), 2)
+        self.assertEqual(len(fsolve('alldiff_discrete.lp', ['-c', 'n=3'])), 6)
+        self.assertEqual(len(fsolve('alldiff_discrete.lp', ['-c', 'n=4'])), 24)
+        self.assertEqual(len(fsolve('alldiff_discrete.lp', ['-c', 'n=5'])),
+                         120)
+
+        self.assertEqual(len(fsolve('alldiff_numeric.lp', ['-c', 'n=2'])), 2)
+        self.assertEqual(len(fsolve('alldiff_numeric.lp', ['-c', 'n=3'])), 6)
+        self.assertEqual(len(fsolve('alldiff_numeric.lp', ['-c', 'n=4'])), 24)
+        self.assertEqual(len(fsolve('alldiff_numeric.lp', ['-c', 'n=5'])), 120)

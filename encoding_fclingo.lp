@@ -50,11 +50,26 @@ association(O1,O2,D,"connection") :- connection(S,T,D), object(O1,S), object(O2,
 :- val(X,V1), val(X,V2), V1 < V2.
 
 %%% Selectors
+% Determine longest path in constraints and aggregates
+len_path(P,P,0) :- path(_,_,P).
+len_path(P,P,0) :- column(_,_,P).
+len_path(P,P,0) :- right(_,P).
+len_path(P,P,0) :- left(_,P).
+len_path(P,P,0) :- path(_,P).
+
+len_path(P,P',N+1) :- len_path(P,(D,P'),N).
+len_path(P,N) :- len_path(P,(),N).
+longest_path(X) :- X = #max { N : len_path(P,N) }.
+
 % An object selector (O,P,O') selects
 %   all objects O' which lie on
 %   path P relative to object O
-selector(O,(),O) :- object(O).
-selector(O,(D,P),(D,(O',I))):- selector(O,P,O'), object((D,(O',I))).
+% Selectors are created only for the longest path length needed
+selector(O,0,(),O) :- object(O).
+selector(O,N+1,(D,P),(D,(O',I))):- selector(O,N,P,O'), object((D,(O',I))). % Partonomic paths
+selector(O,N+1,(D,P),O'') :- selector(O,N,P,O'), connected(O',O'',D), longest_path(X), N < X.    % Connection paths
+
+selector(O,P,O') :- selector(O,_,P,O').
 
 % An attribute selector (O,P,X) selects
 %   all attribute variables X which lie on
@@ -65,13 +80,13 @@ selector(O,(D,P),(O',D)) :- selector(O,P,O'), object(O',T), attr(T,D,_).
 % Count
 % TODO: Implement for discrete attributes
 % val((O,D),V) :- object(O,T), attr(T,D,"count"), V = #count { O',P : path(T,D,P), selector(O,P,O') }.
-&fsum{ 1,O',P : path(T,D,P), selector(O,P,O'), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"count").
+&fsum{ 1,O' : path(T,D,P), selector(O,P,O'), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"count").
 % Sum
-&fsum{ X,P : path(T,D,P), selector(O,P,X) } =: (O,D) :- selected(O,T), attr(T,D,"sum").
+&fsum{ (O',D') : path(T,D,P), selector(O,P,(O',D')), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"sum").
 % Min
-&fmin{ X,P : path(T,D,P), selector(O,P,X) } =: (O,D) :- selected(O,T), attr(T,D,"min").
+&fmin{ (O',D') : path(T,D,P), selector(O,P,(O',D')), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"min").
 % Max
-&fmax{ X,P : path(T,D,P), selector(O,P,X) } =: (O,D) :- selected(O,T), attr(T,D,"max").
+&fmax{ (O',D') : path(T,D,P), selector(O,P,(O',D')), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"max").
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Constraints
@@ -101,8 +116,8 @@ hit_row((O,C),GP,Row) :- entry((T,C),(_,Row),_), 0 = #sum{ 1,Col: entry((T,C),(C
 :- constraint((T,C),"table"), selected(O,T), path_expansion((O,C),GP), not hit_row((O,C),GP,_).
 
 %%% Comparison constraints
-left_compare((O,C),Op,(O',D))  :- constraint((T,C),Op), left((T,C),P), selector(O,P,(O',D)), selected(O,T), selected(O').
-right_compare((O,C),Op,(O',D)) :- constraint((T,C),Op), right((T,C),P),selector(O,P,(O',D)), selected(O,T), selected(O').
+left_compare((O,C),Op,X)  :- constraint((T,C),Op), left((T,C),P), selector(O,P,X), selected(O,T), selected(O'), X = (O',_).
+right_compare((O,C),Op,X) :- constraint((T,C),Op), right((T,C),P),selector(O,P,X), selected(O,T), selected(O'), X = (O',_).
 
 left_compare((O,C),Op,P)  :- constraint((T,C),Op), left((T,C),P), P = constant(N), selected(O,T).
 right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),P = constant(N), selected(O,T).
@@ -112,14 +127,30 @@ right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),P = constant(N
 &fsum{N} =: P :- left_compare(_,_,P), P=constant(N).
 &fsum{N} =: P :- right_compare(_,_,P), P=constant(N).
 
-% TODO: Implement this for discrete attributes as well
+% Discrete attributes
+:- left_compare(C,"eq",X1), right_compare(C,"eq",X2), val(X1,V1), val(X2,V2), V1 != V2.
+:- left_compare(C,"neq",X1), right_compare(C,"neq",X2), val(X1,V1), val(X2,V2), V1 = V2.
+:- left_compare(C,"lt",X1), right_compare(C,"lt",X2), val(X1,V1), val(X2,V2), V1 >= V2.
+:- left_compare(C,"lte",X1), right_compare(C,"lte",X2), val(X1,V1), val(X2,V2), V1 > V2.
+:- left_compare(C,"gt",X1), right_compare(C,"gt",X2), val(X1,V1), val(X2,V2), V1 <= V2.
+:- left_compare(C,"gte",X1), right_compare(C,"gte",X2), val(X1,V1), val(X2,V2), V1 < V2.
 
-&fsum{X1} = X2 :- left_compare(C,"eq",X1),  right_compare(C,"eq",X2).
-&fsum{X1} !=X2 :- left_compare(C,"neq",X1), right_compare(C,"neq",X2).
-&fsum{X1} < X2 :- left_compare(C,"lt",X1),  right_compare(C,"lt",X2).
-&fsum{X1} <=X2 :- left_compare(C,"lte",X1), right_compare(C,"lte",X2).
-&fsum{X1} > X2 :- left_compare(C,"gt",X1),  right_compare(C,"gt",X2).
-&fsum{X1} >=X2 :- left_compare(C,"gte",X1), right_compare(C,"gte",X2).
+% Numeric attributes
+:- left_compare(C,"eq",X1),  right_compare(C,"eq",X2),  &fsum{X1} != X2.
+:- left_compare(C,"neq",X1), right_compare(C,"neq",X2), &fsum{X1} =  X2.
+:- left_compare(C,"lt",X1),  right_compare(C,"lt",X2),  &fsum{X1} >= X2.
+:- left_compare(C,"lte",X1), right_compare(C,"lte",X2), &fsum{X1} >  X2.
+:- left_compare(C,"gt",X1),  right_compare(C,"gt",X2),  &fsum{X1} <= X2.
+:- left_compare(C,"gte",X1), right_compare(C,"gte",X2), &fsum{X1} <  X2.
+
+
+%%% All different constraint
+alldiff((O,C),X) :- constraint((T,C),"alldiff"), path((T,C),P), selector(O,P,X),
+                    selected(O,T), selected(O'), X=(O',_).
+% An all different constraint is not satisfied if two different attribute valuation have the same value assigned
+:- alldiff(C,X1), alldiff(C,X2), X1 != X2, &fsum{X1} = X2.
+:- alldiff(C,X1), alldiff(C,X2), val(X1,V), val(X2,V), X1 < X2.
+
 
 % Define statements
 #defined type/1.
@@ -138,6 +169,8 @@ right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),P = constant(N
 #defined entry/3.
 #defined left/2.
 #defined right/2.
+#defined path/2.
+#defined alldiff/2.
 
 #show selected/2.
 #show val/2.
