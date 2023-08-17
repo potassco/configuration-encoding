@@ -147,6 +147,11 @@ class TestMain(TestCase):
             fsolve('tb_basic.lp'),
             [['selected((),a)', 'val(((),b),"b1")', 'val(((),c),"c1")'],
              ['selected((),a)', 'val(((),b),"b2")', 'val(((),c),"c2")']])
+        self.assertEqual(
+            fsolve('tb_mixed.lp'),
+            [['selected((),a)', 'val(((),b),"b1")', 'val(((),c),1)'],
+             ['selected((),a)', 'val(((),b),"b2")', 'val(((),c),2)']])
+
         self.assertEqual(len(fsolve('tb_colors.lp')), 8)
 
         self.assertEqual(len(fsolve('tb_with_optional.lp')), 4)

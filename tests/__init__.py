@@ -1,7 +1,6 @@
 '''
 Basic functions to run tests in clingo and fclingo
 '''
-import json
 from os import remove
 from subprocess import PIPE, Popen
 
