@@ -55,6 +55,7 @@ len_path(P,P,0) :- path(_,_,P).
 len_path(P,P,0) :- column(_,_,P).
 len_path(P,P,0) :- right(_,P).
 len_path(P,P,0) :- left(_,P).
+len_path(P,P,0) :- path(_,P).
 
 len_path(P,P',N+1) :- len_path(P,(D,P'),N).
 len_path(P,N) :- len_path(P,(),N).
@@ -135,6 +136,15 @@ right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),P = constant(N
 &fsum{X1} > X2 :- left_compare(C,"gt",X1),  right_compare(C,"gt",X2).
 &fsum{X1} >=X2 :- left_compare(C,"gte",X1), right_compare(C,"gte",X2).
 
+
+%%% All different constraint
+alldiff((O,C),X) :- constraint((T,C),"alldiff"), path((T,C),P), selector(O,P,X),
+                    selected(O,T), selected(O'), X=(O',_).
+% An all different constraint is not satisfied if two different attribute valuation have the same value assigned
+:- alldiff(C,X1), alldiff(C,X2), X1 != X2, &fsum{X1} = X2.
+:- alldiff(C,X1), alldiff(C,X2), val(X1,V), val(X2,V), X1 < X2.
+
+
 % Define statements
 #defined type/1.
 #defined part/3.
@@ -152,6 +162,8 @@ right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),P = constant(N
 #defined entry/3.
 #defined left/2.
 #defined right/2.
+#defined path/2.
+#defined alldiff/2.
 
 #show selected/2.
 #show val/2.

@@ -153,3 +153,14 @@ class TestMain(TestCase):
         self.assertEqual(len(fsolve('tb_with_optional_reverse.lp')), 4)
 
         self.assertEqual(len(fsolve('comparison_of_optional.lp')), 3)
+
+        self.assertEqual(len(fsolve('alldiff_discrete.lp', ['-c', 'n=2'])), 2)
+        self.assertEqual(len(fsolve('alldiff_discrete.lp', ['-c', 'n=3'])), 6)
+        self.assertEqual(len(fsolve('alldiff_discrete.lp', ['-c', 'n=4'])), 24)
+        self.assertEqual(len(fsolve('alldiff_discrete.lp', ['-c', 'n=5'])),
+                         120)
+
+        self.assertEqual(len(fsolve('alldiff_numeric.lp', ['-c', 'n=2'])), 2)
+        self.assertEqual(len(fsolve('alldiff_numeric.lp', ['-c', 'n=3'])), 6)
+        self.assertEqual(len(fsolve('alldiff_numeric.lp', ['-c', 'n=4'])), 24)
+        self.assertEqual(len(fsolve('alldiff_numeric.lp', ['-c', 'n=5'])), 120)
