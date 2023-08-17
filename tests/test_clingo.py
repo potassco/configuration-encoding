@@ -221,3 +221,9 @@ class TestMain(TestCase):
         self.assertEqual(len(solve('alldiff.lp', ['-c', 'n=3'])), 6)
         self.assertEqual(len(solve('alldiff.lp', ['-c', 'n=4'])), 24)
         self.assertEqual(len(solve('alldiff.lp', ['-c', 'n=5'])), 120)
+
+        self.assertEqual(
+            solve('incompatible.lp'),
+            [['selected((),a)', 'val(((),b),"b1")', 'val(((),c),"c2")'],
+             ['selected((),a)', 'val(((),b),"b2")', 'val(((),c),"c1")'],
+             ['selected((),a)', 'val(((),b),"b2")', 'val(((),c),"c2")']])

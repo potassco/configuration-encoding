@@ -134,10 +134,10 @@ alldiff((O,C),X) :- constraint((T,C),"alldiff"), path((T,C),P), selector(O,P,X),
 
 
 %%% Incompatibility constraints
-left_incompatible((O,C),V,(O',D))  :- constraint((T,C),"incompatible"), left((T,C),P,V), selector(O,P,(O',D)), selected(O,T), selected(O').
-right_incompatible((O,C),V,(O',D)) :- constraint((T,C),"incompatible"), right((T,C),P,V),selector(O,P,(O',D)), selected(O,T), selected(O').
+hit_left((O,C))  :- constraint((T,C),"incompatible"), left((T,C),P,V), selector(O,P,X), selected(O,T), selected(O'), val(X,V), X=(O',_).
+hit_right((O,C)) :- constraint((T,C),"incompatible"), right((T,C),P,V),selector(O,P,X), selected(O,T), selected(O'), val(X,V), X=(O',_).
 
-:- left_incompatible(C,V1,X1), right_incompatible(C,V2,X2), val(X1,V1), val(X2,V2).
+:- hit_left(C), hit_right(C).
 
 
 % Define statements
@@ -150,13 +150,15 @@ right_incompatible((O,C),V,(O',D)) :- constraint((T,C),"incompatible"), right((T
 #defined attr/2.
 #defined attr/3.
 #defined dom/3.
+#defined path/2.
 #defined path/3.
 #defined constraint/2.
 #defined column/3.
 #defined entry/3.
 #defined left/2.
+#defined left/3.
 #defined right/2.
-#defined path/2.
+#defined right/3.
 #defined alldiff/2.
 
 #show selected/2.

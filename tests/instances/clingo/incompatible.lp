@@ -1,14 +1,12 @@
-type(bike). type(frame).
-part(bike,frame,frame).
-multiplicity(bike,frame,frame,1).
+type(a).
 
-attr(bike,color,"discrete").
-dom(bike,color,("red";"yellow")).
-attr(frame,color,"discrete").
-dom(frame,color,("red";"yellow")).
+attr(a,b,"discrete").
+dom(a,b,("b1";"b2")).
+attr(a,c,"discrete").
+dom(a,c,("c1";"c2")).
 
-constraint((bike,0),"incompatible").
-left((bike,0),(color,()),"red").    right((bike,0),(color,(frame,())),"yellow").
+constraint((a,0),"incompatible").
+left((a,0),(b,()),"b1").    right((a,0),(c,()),"c1").
 
 % constraint((bike,0),"table").
 % column((bike,0),0,(color,())).  column((bike,0),1,(color,(frame,()))).
