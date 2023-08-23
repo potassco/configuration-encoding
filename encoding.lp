@@ -132,6 +132,12 @@ alldiff((O,C),X) :- constraint((T,C),"alldiff"), path((T,C),P), selector(O,P,X),
 % An all different constraint is not satisfied if two different attribute valuation have the same value assigned
 :- alldiff(C,X1), alldiff(C,X2), val(X1,V), val(X2,V), X1 < X2.
 
+%%% All same constraint
+allsame((O,C),X) :- constraint((T,C),"allsame"), path((T,C),P), selector(O,P,X),
+                    selected(O,T), selected(O'), X=(O',_).
+% An all same constraint is not satisfied if two different attribute valuation have a different value assigned
+:- allsame(C,X1), allsame(C,X2), val(X1,V1), val(X2,V2), X1 < X2, V1 != V2.
+
 
 % Define statements
 #defined type/1.
