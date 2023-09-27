@@ -43,9 +43,8 @@ association(O1,O2,D,"connection") :- connection(S,T,D), object(O1,S), object(O2,
 
 % Assign values to attribute variables
 { val((O,D),V) : dom(T,D,V) } :- selected(O,T), attr(T,D,"discrete").
-% Exactly one value has to be assigned for an attribute variable
-:- attr(T,D,"discrete"), selected(O,T), not val((O,D),_).
-:- val(X,V1), val(X,V2), V1 < V2.
+% Exactly one value has to be assigned to an attribute variable
+:-  { val((O,D),V) : dom(T,D,V) } != 1, selected(O,T), attr(T,D,"discrete").
 
 %%% Selectors
 % Determine longest path in constraints and aggregates
