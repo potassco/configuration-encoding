@@ -123,8 +123,8 @@ right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),P = constant(N
 
 % Auxiliary val atoms for comparison with constants
 % TODO: Is there are a simpler way to declare constants?
-&in{N..N} =: P :- left_compare(_,_,P), P=constant(N).
-&in{N..N} =: P :- right_compare(_,_,P), P=constant(N).
+&sus{N} =: P :- left_compare(_,_,P), P=constant(N).
+&sus{N} =: P :- right_compare(_,_,P), P=constant(N).
 
 % Discrete attributes
 :- left_compare(C,"eq",X1), right_compare(C,"eq",X2), val(X1,V1), val(X2,V2), V1 != V2.
