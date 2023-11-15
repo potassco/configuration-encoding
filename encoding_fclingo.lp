@@ -43,7 +43,7 @@ association(O1,O2,D,"connection") :- connection(S,T,D), object(O1,S), object(O2,
 
 % Assign values to attribute variables
 { val((O,D),V) : dom(T,D,V) } :- selected(O,T), attr(T,D,"discrete").
-&fin{ Min..Max } =: (O,D) :- selected(O,T), attr(T,D,"numeric"), dom(T,D,Min,Max).
+&in{ Min..Max } =: (O,D) :- selected(O,T), attr(T,D,"numeric"), dom(T,D,Min,Max).
 
 % Exactly one value has to be assigned to a discrete attribute variable
 :-  { val((O,D),V) : dom(T,D,V) } != 1, selected(O,T), attr(T,D,"discrete").
@@ -79,13 +79,13 @@ selector(O,(D,P),(O',D)) :- selector(O,P,O'), object(O',T), attr(T,D,_).
 % Count
 % TODO: Implement for discrete attributes
 % val((O,D),V) :- object(O,T), attr(T,D,"count"), V = #count { O',P : path(T,D,P), selector(O,P,O') }.
-&fsum{ 1,O' : path(T,D,P), selector(O,P,O'), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"count").
+&sus{ 1,O' : path(T,D,P), selector(O,P,O'), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"count").
 % Sum
-&fsum{ (O',D') : path(T,D,P), selector(O,P,(O',D')), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"sum").
+&sus{ (O',D') : path(T,D,P), selector(O,P,(O',D')), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"sum").
 % Min
-&fmin{ (O',D') : path(T,D,P), selector(O,P,(O',D')), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"min").
+&min{ (O',D') : path(T,D,P), selector(O,P,(O',D')), selected(O') } = (O,D) :- selected(O,T), attr(T,D,"min").
 % Max
-&fmax{ (O',D') : path(T,D,P), selector(O,P,(O',D')), selected(O') } =: (O,D) :- selected(O,T), attr(T,D,"max").
+&max{ (O',D') : path(T,D,P), selector(O,P,(O',D')), selected(O') } = (O,D) :- selected(O,T), attr(T,D,"max").
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Constraints
@@ -107,7 +107,7 @@ hit_cell((O,C),GP,(Col,Row)) :- entry((T,C),(Col,Row),V), column((T,C),Col,P), s
                                 selected(O,T), selected(O'), val(X,V), non_numeric(X),
                                 path_expansion((O,C),GP), in_path(GP,X).
 hit_cell((O,C),GP,(Col,Row)) :- entry((T,C),(Col,Row),V), column((T,C),Col,P), selector(O,P,X), X = (O',_),
-                                selected(O,T), selected(O'), &fsum{X} = V, not non_numeric(X),
+                                selected(O,T), selected(O'), &sum{X} = V, not non_numeric(X),
                                 path_expansion((O,C),GP), in_path(GP,X).
 hit_row((O,C),GP,Row) :- entry((T,C),(_,Row),_), 0 = #sum{ 1,Col: entry((T,C),(Col,Row),_); -1,Col': hit_cell((O,C),GP,(Col',Row)) },
                          selected(O,T), path_expansion((O,C),GP).
@@ -123,8 +123,8 @@ right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),P = constant(N
 
 % Auxiliary val atoms for comparison with constants
 % TODO: Is there are a simpler way to declare constants?
-&fsum{N} =: P :- left_compare(_,_,P), P=constant(N).
-&fsum{N} =: P :- right_compare(_,_,P), P=constant(N).
+&in{N..N} =: P :- left_compare(_,_,P), P=constant(N).
+&in{N..N} =: P :- right_compare(_,_,P), P=constant(N).
 
 % Discrete attributes
 :- left_compare(C,"eq",X1), right_compare(C,"eq",X2), val(X1,V1), val(X2,V2), V1 != V2.
@@ -135,26 +135,26 @@ right_compare((O,C),Op,P) :- constraint((T,C),Op), right((T,C),P),P = constant(N
 :- left_compare(C,"gte",X1), right_compare(C,"gte",X2), val(X1,V1), val(X2,V2), V1 < V2.
 
 % Numeric attributes
-:- left_compare(C,"eq",X1),  right_compare(C,"eq",X2),  &fsum{X1} != X2.
-:- left_compare(C,"neq",X1), right_compare(C,"neq",X2), &fsum{X1} =  X2.
-:- left_compare(C,"lt",X1),  right_compare(C,"lt",X2),  &fsum{X1} >= X2.
-:- left_compare(C,"lte",X1), right_compare(C,"lte",X2), &fsum{X1} >  X2.
-:- left_compare(C,"gt",X1),  right_compare(C,"gt",X2),  &fsum{X1} <= X2.
-:- left_compare(C,"gte",X1), right_compare(C,"gte",X2), &fsum{X1} <  X2.
+:- left_compare(C,"eq",X1),  right_compare(C,"eq",X2),  &sum{X1} != X2.
+:- left_compare(C,"neq",X1), right_compare(C,"neq",X2), &sum{X1} =  X2.
+:- left_compare(C,"lt",X1),  right_compare(C,"lt",X2),  &sum{X1} >= X2.
+:- left_compare(C,"lte",X1), right_compare(C,"lte",X2), &sum{X1} >  X2.
+:- left_compare(C,"gt",X1),  right_compare(C,"gt",X2),  &sum{X1} <= X2.
+:- left_compare(C,"gte",X1), right_compare(C,"gte",X2), &sum{X1} <  X2.
 
 
 %%% All different constraint
 alldiff((O,C),X) :- constraint((T,C),"alldiff"), path((T,C),P), selector(O,P,X),
                     selected(O,T), selected(O'), X=(O',_).
 % An all different constraint is not satisfied if two different attribute valuation have the same value assigned
-:- alldiff(C,X1), alldiff(C,X2), X1 != X2, &fsum{X1} = X2.
+:- alldiff(C,X1), alldiff(C,X2), X1 != X2, &sum{X1} = X2.
 :- alldiff(C,X1), alldiff(C,X2), val(X1,V), val(X2,V), X1 < X2.
 
 %%% All same constraint
 allsame((O,C),X) :- constraint((T,C),"allsame"), path((T,C),P), selector(O,P,X),
                     selected(O,T), selected(O'), X=(O',_).
 % An all same constraint is not satisfied if two different attribute valuation have a different value assigned
-:- allsame(C,X1), allsame(C,X2), X1 != X2, &fsum{X1} != X2.
+:- allsame(C,X1), allsame(C,X2), X1 != X2, &sum{X1} != X2.
 :- allsame(C,X1), allsame(C,X2), val(X1,V1), val(X2,V2), X1 < X2, V1 != V2.
 
 % Define statements
