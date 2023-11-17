@@ -8,18 +8,22 @@ import clingo
 from clingcon import ClingconTheory
 from clingo.ast import Location, Position, ProgramBuilder, Rule, parse_string, parse_files
 
-from fclingo import THEORY, Translator
+from fclingo import THEORY
 from fclingo.__main__ import CSP, DEF
 from fclingo.parsing import HeadBodyTransformer
+from fclingo.translator import AUX, Translator
 
 TMP_FILE = 'tests/instances/tmp.lp'
 
+
 class Config:
-    def __init__(self, max_int, min_int, print_trans ,defined) -> None:
+
+    def __init__(self, max_int, min_int, print_trans, defined) -> None:
         self.max_int = max_int
         self.min_int = min_int
         self.print_trans = print_trans
         self.defined = defined
+
 
 class SolverClingo():
 
@@ -55,9 +59,8 @@ class SolverFclingo(object):
     """
 
     def __init__(self, minint=-20, maxint=20, threads=8, options=()):
-        self.prg = clingo.Control(
-            ["0", "-t", str(threads)] + list(options), message_limit=0
-        )
+        self.prg = clingo.Control(["0", "-t", str(threads)] + list(options),
+                                  message_limit=0)
         self.optimize = False
         self.bound = None
         self.propagator = ClingconTheory()
@@ -74,21 +77,21 @@ class SolverFclingo(object):
         Combine model and assignment in one list.
         """
         self.propagator.on_model(model)
-        m = []
-        for sym in model.symbols(shown=True):
-            s = str(sym)
-            if not s.startswith("_"):
-                m.append(s)
 
-        a = [
-            (str(assignment.arguments[0]), assignment.arguments[1].number)
-            for assignment in model.symbols(theory=True)
-            if assignment.name == CSP
-            and len(assignment.arguments) == 2
-            and not assignment.arguments[0].name.startswith("_")
+        shown = [
+            str(atom) for atom in model.symbols(shown=True)
+            if not (atom.name == DEF and len(atom.arguments) == 1)
         ]
 
-        ret.append((sorted(m), sorted(a)))
+        val = [
+            f'val({str(assignment.arguments[0])},{assignment.arguments[1].number})'
+            for assignment in model.symbols(theory=True)
+            if assignment.name == CSP and len(assignment.arguments) == 2
+            and model.contains(clingo.Function(DEF, [assignment.arguments[0]]))
+            and not assignment.arguments[0].name == AUX
+        ]
+
+        ret.append((sorted(shown), sorted(val)))
 
     def solve(self, f):
         """
@@ -101,20 +104,18 @@ class SolverFclingo(object):
             if f.endswith('.lp'):
                 files.append(f'tests/instances/fclingo/{f}')
             else:
-                parse_string(f,lambda ast: bld.add(hbt.visit(ast)))
-            
-            parse_files(
-                files,
-                lambda ast: bld.add(hbt.visit(ast))
-            )
+                parse_string(f, lambda ast: bld.add(hbt.visit(ast)))
 
+            parse_files(files, lambda ast: bld.add(hbt.visit(ast)))
+            parse_string('#show __def/1.', lambda ast: bld.add(hbt.visit(ast)))
             pos = Position('<string>', 1, 1)
             loc = Location(pos, pos)
             for rule in hbt.rules_to_add:
-                bld.add(Rule(loc,rule[0],rule[1]))
+                bld.add(Rule(loc, rule[0], rule[1]))
 
         self.prg.ground([("base", [])])
-        translator = Translator(self.prg, Config(self.maxint, self.minint, False, DEF))
+        translator = Translator(self.prg,
+                                Config(self.maxint, self.minint, False, DEF))
         translator.translate(self.prg.theory_atoms)
 
         ret = []
@@ -131,35 +132,5 @@ def fsolve(f, minint=-20, maxint=20, threads=8, options=()):
     """
     fsolver = SolverFclingo(minint, maxint, threads, options)
     ret = fsolver.solve(f)
-    print(ret)
+
     return ret
-
-
-# def fsolve(f, options=()):
-#     if f.endswith('.lp'):
-#         instance = f'tests/instances/fclingo/{f}'
-#     else:
-#         with open(TMP_FILE, 'w') as tmp:
-#             tmp.write(f)
-#         instance = TMP_FILE
-
-#     solve = Popen(['fclingo', 'encoding_fclingo.lp', instance, '0'] +
-#                   list(options),
-#                   stdout=PIPE,
-#                   stderr=PIPE)
-
-#     out, _ = solve.communicate()
-#     out = out.decode('utf-8')
-
-#     # Remove temp file
-#     if instance == TMP_FILE:
-#         remove(TMP_FILE)
-
-#     if 'UNSATISFIABLE' in out:
-#         return []
-#     else:
-#         out = out.split('\n')
-#         models = out[out.index('Answer: 1'):out.index('SATISFIABLE')][1::2]
-#         models = [sorted(m.split(' ')) for m in models]
-#         models.sort()
-#         return models
