@@ -7,4 +7,4 @@ To get all stable models
 clingo encoding.lp examples/bike/model.lp --opt-mode=enum 0
 ```
 
-![](clingraph.png)
+![](models.png)
