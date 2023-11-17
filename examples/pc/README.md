@@ -7,7 +7,7 @@ To get all stable models
 clingo encoding.lp examples/pc/model.lp --opt-mode=enum 0
 ```
 
-![](clingraph.png)
+![](model.png)
 
 
 ## References
